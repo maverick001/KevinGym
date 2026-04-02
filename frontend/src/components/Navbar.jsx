@@ -19,13 +19,15 @@ const Navbar = () => {
       <div className="flex items-center gap-6 text-sm">
         {user ? (
           <>
-            <Link
-              to={user.role === 'vendor' ? '/vendor-panel' : '/class-booking'}
-              className="hover:text-green-200"
-            >Classes</Link>
-            <Link to="/member-panel" className="hover:text-green-200">Members</Link>
+            {user.role === 'member' && (
+              <Link to="/class-booking" className="hover:text-green-200">Browse New Classes</Link>
+            )}
             {user.role === 'admin' && (
-              <Link to="/admin" className="hover:text-green-200">Admin</Link>
+              <>
+                <Link to="/class-booking" className="hover:text-green-200">Classes</Link>
+                <Link to="/member-panel" className="hover:text-green-200">Members</Link>
+                <Link to="/admin" className="hover:text-green-200">Admin</Link>
+              </>
             )}
             <button onClick={handleLogout} className="hover:text-green-200">Logout</button>
           </>
