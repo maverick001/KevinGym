@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../axiosConfig';
 
 const Register = () => {
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'member' });
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -18,31 +18,55 @@ const Register = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-20">
-      <form onSubmit={handleSubmit} className="bg-white p-6 shadow-md rounded">
-        <h1 className="text-2xl font-bold mb-4 text-center">Register</h1>
+    <div className="min-h-screen bg-gym-cream flex items-center justify-center px-4">
+      <form onSubmit={handleSubmit} className="bg-white w-full max-w-md p-6 shadow-md rounded-lg">
+        <h1 className="text-2xl font-semibold mb-5 text-center text-gray-800">Create Account</h1>
         <input
           type="text"
-          placeholder="Name"
+          placeholder="Full Name"
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          className="w-full mb-4 p-2 border rounded"
+          className="w-full mb-3 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-gym-green"
         />
         <input
           type="email"
           placeholder="Email"
           value={formData.email}
           onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          className="w-full mb-4 p-2 border rounded"
+          className="w-full mb-3 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-gym-green"
         />
         <input
           type="password"
           placeholder="Password"
           value={formData.password}
           onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          className="w-full mb-4 p-2 border rounded"
+          className="w-full mb-4 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-gym-green"
         />
-        <button type="submit" className="w-full bg-green-600 text-white p-2 rounded">
+
+        {/* Role selection */}
+        <p className="text-sm text-gray-600 mb-2">Register as:</p>
+        <div className="flex gap-6 mb-5">
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={formData.role === 'member'}
+              onChange={() => setFormData({ ...formData, role: 'member' })}
+              className="accent-gym-green"
+            />
+            Member
+          </label>
+          <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={formData.role === 'vendor'}
+              onChange={() => setFormData({ ...formData, role: 'vendor' })}
+              className="accent-gym-green"
+            />
+            Course Vendor
+          </label>
+        </div>
+
+        <button type="submit" className="w-full bg-gym-green text-white py-2 rounded text-sm font-medium hover:opacity-90">
           Register
         </button>
       </form>

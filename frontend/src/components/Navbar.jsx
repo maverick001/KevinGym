@@ -14,21 +14,24 @@ const Navbar = () => {
     <nav className="bg-gym-green text-white px-8 py-3 flex justify-between items-center">
       <div>
         <Link to="/" className="text-xl font-bold tracking-wide">Kevin's Gym</Link>
-        <p className="text-xs text-green-200 mt-0.5">Family Fitness Since 1998</p>
+        <p className="text-xs text-green-200 mt-0.5">Family Fitness at Brisbane</p>
       </div>
       <div className="flex items-center gap-6 text-sm">
         {user ? (
           <>
-            <Link to="/tasks" className="hover:text-green-200">Classes</Link>
-            <Link to="/profile" className="hover:text-green-200">Members</Link>
+            <Link
+              to={user.role === 'vendor' ? '/vendor-panel' : '/class-booking'}
+              className="hover:text-green-200"
+            >Classes</Link>
+            <Link to="/member-panel" className="hover:text-green-200">Members</Link>
+            {user.role === 'admin' && (
+              <Link to="/admin" className="hover:text-green-200">Admin</Link>
+            )}
             <button onClick={handleLogout} className="hover:text-green-200">Logout</button>
           </>
         ) : (
           <>
-            <Link to="/" className="hover:text-green-200">Home</Link>
-            <Link to="/login" className="hover:text-green-200">Classes</Link>
-            <Link to="/login" className="hover:text-green-200">Members</Link>
-            <Link to="/login" className="hover:text-green-200">Contact</Link>
+            <Link to="/login" className="hover:text-green-200">Contact Us</Link>
           </>
         )}
       </div>
