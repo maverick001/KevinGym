@@ -24,7 +24,7 @@ const NOTIFICATIONS = [
 const MemberPanel = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [profile, setProfile] = useState({ name: '', email: '' });
+  const [profile, setProfile] = useState({ name: user?.name || '', email: user?.email || '' });
   const [membershipStatus, setMembershipStatus] = useState('Active');
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
