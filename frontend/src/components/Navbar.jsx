@@ -11,29 +11,24 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-blue-600 text-white p-4 flex justify-between items-center">
-      <Link to="/" className="text-2xl font-bold">Your apps name</Link>
+    <nav className="bg-gym-green text-white px-8 py-3 flex justify-between items-center">
       <div>
+        <Link to="/" className="text-xl font-bold tracking-wide">Kevin's Gym</Link>
+        <p className="text-xs text-green-200 mt-0.5">Family Fitness Since 1998</p>
+      </div>
+      <div className="flex items-center gap-6 text-sm">
         {user ? (
           <>
-            <Link to="/tasks" className="mr-4">CRUD</Link>
-            <Link to="/profile" className="mr-4">Profile</Link>
-            <button
-              onClick={handleLogout}
-              className="bg-red-500 px-4 py-2 rounded hover:bg-red-700"
-            >
-              Logout
-            </button>
+            <Link to="/tasks" className="hover:text-green-200">Classes</Link>
+            <Link to="/profile" className="hover:text-green-200">Members</Link>
+            <button onClick={handleLogout} className="hover:text-green-200">Logout</button>
           </>
         ) : (
           <>
-            <Link to="/login" className="mr-4">Login</Link>
-            <Link
-              to="/register"
-              className="bg-green-500 px-4 py-2 rounded hover:bg-green-700"
-            >
-              Register
-            </Link>
+            <Link to="/" className="hover:text-green-200">Home</Link>
+            <Link to="/login" className="hover:text-green-200">Classes</Link>
+            <Link to="/login" className="hover:text-green-200">Members</Link>
+            <Link to="/login" className="hover:text-green-200">Contact</Link>
           </>
         )}
       </div>
