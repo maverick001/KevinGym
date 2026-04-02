@@ -141,22 +141,19 @@ const MemberPanel = () => {
               )}
             </div>
             <div className="flex gap-2 pt-2">
-              {editing ? (
-                <button
-                  onClick={handleSave}
-                  disabled={loading}
-                  className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
-                >
-                  {loading ? 'Saving...' : 'Save'}
-                </button>
-              ) : (
-                <button
-                  onClick={() => setEditing(true)}
-                  className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
-                >
-                  Edit Profile
-                </button>
-              )}
+              <button
+                onClick={() => setEditing(true)}
+                className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
+              >
+                Edit Profile
+              </button>
+              <button
+                onClick={handleSave}
+                disabled={loading || !editing}
+                className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Saving...' : 'Save'}
+              </button>
             </div>
           </div>
         </div>
