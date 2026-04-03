@@ -1,8 +1,8 @@
 import axios from 'axios';
 
 const axiosInstance = axios.create({
-  baseURL: 'http://localhost:6001', // local
-  //baseURL: 'http://3.26.96.188:6001', // live
+  //baseURL: 'http://localhost:6001', // local
+  baseURL: '', // production: same host, proxied via Nginx
   headers: { 'Content-Type': 'application/json' },
 });
 
