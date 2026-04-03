@@ -12,7 +12,7 @@ const BOOKED_CLASSES = [
   { id: 'CLS-256', classroom: 'Yoga Loft', time: 'Mar 30 · 6:00 AM'  },
 ];
 
-const NOTIFICATIONS = [
+const INITIAL_NOTIFICATIONS = [
   { id: 'MSG-001', content: 'Your booking for CLS-101 is confirmed.' },
   { id: 'MSG-002', content: 'Reminder: Power Yoga tomorrow at 7:00 AM.' },
   { id: 'MSG-003', content: 'Class CLS-089 location changed to Studio B.' },
@@ -28,6 +28,10 @@ const MemberPanel = () => {
   const [membershipStatus, setMembershipStatus] = useState('Active');
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [selectedNotif, setSelectedNotif] = useState(null);
+  const [flaggedNotifs, setFlaggedNotifs] = useState(new Set());
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -210,19 +214,46 @@ const MemberPanel = () => {
               </tr>
             </thead>
             <tbody>
-              {NOTIFICATIONS.map((msg, i) => (
-                <tr key={msg.id} className={i % 2 === 1 ? 'bg-gray-50' : ''}>
-                  <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{msg.id}</td>
-                  <td className="px-4 py-2 text-gray-600">{msg.content}</td>
-                </tr>
-              ))}
+              {notifications.map((msg, i) => {
+                const isSelected = selectedNotif === i;
+                const isFlagged = flaggedNotifs.has(i);
+                const rowClass = isSelected ? 'bg-blue-50' : isFlagged ? 'bg-yellow-50' : i % 2 === 1 ? 'bg-gray-50' : '';
+                return (
+                  <tr key={msg.id} onClick={() => setSelectedNotif(i)} className={`cursor-pointer ${rowClass} hover:bg-blue-50`}>
+                    <td className={`px-4 py-2 whitespace-nowrap ${isFlagged ? 'font-medium text-yellow-800' : 'text-gray-600'}`}>{msg.id}</td>
+                    <td className={`px-4 py-2 ${isFlagged ? 'font-medium text-yellow-800' : 'text-gray-600'}`}>{msg.content}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
           <div className="flex justify-between p-4 border-t border-gray-200">
-            <button className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50">
+            <button
+              onClick={() => {
+                if (selectedNotif === null) return;
+                setFlaggedNotifs(prev => {
+                  const next = new Set(prev);
+                  next.has(selectedNotif) ? next.delete(selectedNotif) : next.add(selectedNotif);
+                  return next;
+                });
+              }}
+              className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
+            >
               Flag
             </button>
-            <button className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50">
+            <button
+              onClick={() => {
+                if (selectedNotif === null) return;
+                setNotifications(prev => prev.filter((_, i) => i !== selectedNotif));
+                setFlaggedNotifs(prev => {
+                  const next = new Set();
+                  prev.forEach(idx => { if (idx < selectedNotif) next.add(idx); else if (idx > selectedNotif) next.add(idx - 1); });
+                  return next;
+                });
+                setSelectedNotif(null);
+              }}
+              className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50"
+            >
               Delete
             </button>
           </div>

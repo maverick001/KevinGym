@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
 
-const NOTIFICATIONS = [
+const INITIAL_NOTIFICATIONS = [
   { message: 'New member sign-up: Sarah Mitchell',          date: 'Mar 23' },
   { message: 'Class cancelled: Boxing Basics (Mar 24)',     date: 'Mar 23' },
   { message: 'Vendor request: Priya Nair — Happy Yoga Studio', date: 'Mar 22' },
@@ -22,6 +22,10 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [selected, setSelected] = useState(null); // user being edited
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', role: 'member' });
+
+  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [showNotifForm, setShowNotifForm] = useState(false);
+  const [notifForm, setNotifForm] = useState({ message: '', target: 'members' });
 
   const fetchUsers = async () => {
     try {
@@ -185,26 +189,80 @@ const AdminDashboard = () => {
         {/* System Notifications */}
         <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
           <div className={cardHeader}>System Notifications</div>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-2 font-semibold text-gray-700">Message</th>
-                <th className="text-left px-4 py-2 font-semibold text-gray-700">Date</th>
-              </tr>
-            </thead>
-            <tbody>
-              {NOTIFICATIONS.map((n, i) => (
-                <tr key={i} className={i % 2 === 1 ? 'bg-gray-50' : ''}>
-                  <td className="px-4 py-2 text-gray-600">{n.message}</td>
-                  <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{n.date}</td>
+
+          {showNotifForm ? (
+            <div className="p-4 space-y-3">
+              <textarea
+                rows={3}
+                placeholder="Notification message"
+                value={notifForm.message}
+                onChange={(e) => setNotifForm({ ...notifForm, message: e.target.value })}
+                className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm text-gray-700 focus:outline-none focus:border-gym-green resize-none"
+              />
+              <select
+                value={notifForm.target}
+                onChange={(e) => setNotifForm({ ...notifForm, target: e.target.value })}
+                className={inputClass}
+              >
+                <option value="members">Members</option>
+                <option value="vendors">Vendors</option>
+                <option value="all">All</option>
+              </select>
+              <div className="flex gap-2 pt-1">
+                <button
+                  onClick={() => {
+                    if (!notifForm.message.trim()) return;
+                    const today = new Date();
+                    const dateStr = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    setNotifications([
+                      { message: `[To: ${notifForm.target}] ${notifForm.message.trim()}`, date: dateStr },
+                      ...notifications,
+                    ]);
+                    setNotifForm({ message: '', target: 'members' });
+                    setShowNotifForm(false);
+                  }}
+                  className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  Submit
+                </button>
+                <button
+                  onClick={() => { setShowNotifForm(false); setNotifForm({ message: '', target: 'members' }); }}
+                  className="px-4 py-1.5 border border-gray-300 rounded text-sm text-gray-500 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200">
+                  <th className="text-left px-4 py-2 font-semibold text-gray-700">Message</th>
+                  <th className="text-left px-4 py-2 font-semibold text-gray-700">Date</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <div className="flex justify-between p-4 border-t border-gray-200">
-            <button className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50">Edit</button>
-            <button className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50">Send</button>
-          </div>
+              </thead>
+              <tbody>
+                {notifications.map((n, i) => (
+                  <tr key={i} className={i % 2 === 1 ? 'bg-gray-50' : ''}>
+                    <td className="px-4 py-2 text-gray-600">{n.message}</td>
+                    <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{n.date}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+
+          {!showNotifForm && (
+            <div className="flex justify-between p-4 border-t border-gray-200">
+              <button
+                onClick={() => setShowNotifForm(true)}
+                className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
+              >
+                Create
+              </button>
+              <button className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50">Send</button>
+            </div>
+          )}
         </div>
 
       </div>
