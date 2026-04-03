@@ -2,6 +2,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
+const path = require('path');
 const connectDB = require('./config/db');
 
 dotenv.config();
@@ -14,6 +15,9 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 //app.use('/api/tasks', require('./routes/taskRoutes'));
+
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+app.get('*', (req, res) => res.sendFile(path.join(__dirname, '../frontend/build/index.html')));
 
 // Export the app object for testing
 if (require.main === module) {
