@@ -131,18 +131,7 @@ const MemberPanel = () => {
             </div>
             <div className="flex items-center gap-2">
               <span className={labelClass}>Membership Status</span>
-              {editing ? (
-                <select
-                  value={membershipStatus}
-                  onChange={(e) => setMembershipStatus(e.target.value)}
-                  className={inputClass}
-                >
-                  <option value="Active">Active</option>
-                  <option value="Expire Soon">Expire Soon</option>
-                </select>
-              ) : (
-                <input type="text" value={membershipStatus} disabled className={inputClass} />
-              )}
+              <input type="text" value={membershipStatus} disabled className={inputClass} />
             </div>
             <div className="flex gap-2 pt-2">
               <button
