@@ -21,7 +21,7 @@ const INITIAL_NOTIFICATIONS = [
 const STUDIOS = ['Happy Yoga Studio', 'Studio A', 'Studio B', 'Spin Room', 'Yoga Loft'];
 
 const VendorPanel = () => {
-  const [form, setForm] = useState({ course: '', schedule: '', description: '', studio: STUDIOS[0] });
+  const [form, setForm] = useState({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
   const [courses, setCourses] = useState(PUBLISHED_COURSES);
   const [selected, setSelected] = useState(null);
 
@@ -30,28 +30,28 @@ const VendorPanel = () => {
   const [flaggedNotifs, setFlaggedNotifs] = useState(new Set());
 
   const handleCreate = () => {
-    if (!form.course || !form.schedule) return;
-    setCourses([...courses, { course: form.course, schedule: form.schedule, time: '—' }]);
-    setForm({ course: '', schedule: '', description: '', studio: STUDIOS[0] });
+    if (!form.course || !form.date) return;
+    setCourses([...courses, { course: form.course, schedule: form.date, time: form.time || '—' }]);
+    setForm({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
   };
 
   const handleSave = () => {
     if (!selected) return;
-    setCourses(courses.map((c, i) => i === selected ? { ...c, course: form.course, schedule: form.schedule } : c));
+    setCourses(courses.map((c, i) => i === selected ? { ...c, course: form.course, schedule: form.date, time: form.time } : c));
     setSelected(null);
-    setForm({ course: '', schedule: '', description: '', studio: STUDIOS[0] });
+    setForm({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
   };
 
   const handleSelectForEdit = (i) => {
     setSelected(i);
-    setForm({ course: courses[i].course, schedule: courses[i].schedule, description: '', studio: STUDIOS[0] });
+    setForm({ course: courses[i].course, date: courses[i].schedule, time: courses[i].time, description: '', studio: STUDIOS[0] });
   };
 
   const handleDelete = () => {
     if (selected === null) return;
     setCourses(courses.filter((_, i) => i !== selected));
     setSelected(null);
-    setForm({ course: '', schedule: '', description: '', studio: STUDIOS[0] });
+    setForm({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
   };
 
   const inputClass = 'w-full px-2 py-1.5 border border-gray-300 rounded text-sm text-gray-700 focus:outline-none focus:border-gym-green';
@@ -72,19 +72,26 @@ const VendorPanel = () => {
         <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
           <div className={cardHeader}>Create Course</div>
           <div className="p-4 space-y-3">
+            <input
+              type="text"
+              placeholder="Course Name"
+              value={form.course}
+              onChange={(e) => setForm({ ...form, course: e.target.value })}
+              className={inputClass}
+            />
             <div className="flex gap-2">
               <input
                 type="text"
-                placeholder="Course Name"
-                value={form.course}
-                onChange={(e) => setForm({ ...form, course: e.target.value })}
+                placeholder="Date (e.g. Mon / Wed)"
+                value={form.date}
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
                 className={inputClass}
               />
               <input
                 type="text"
-                placeholder="Schedule"
-                value={form.schedule}
-                onChange={(e) => setForm({ ...form, schedule: e.target.value })}
+                placeholder="Time (e.g. 7:00 AM)"
+                value={form.time}
+                onChange={(e) => setForm({ ...form, time: e.target.value })}
                 className={inputClass}
               />
             </div>
