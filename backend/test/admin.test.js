@@ -30,7 +30,7 @@ function findByIdResult(data) {
   return p;
 }
 
-describe('Admin User API', () => {
+describe('Administrator Panel API', () => {
   afterEach(() => sinon.restore());
 
   // ── View Users ──────────────────────────────────────────────────────────────

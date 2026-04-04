@@ -14,7 +14,7 @@ const User = require('../models/User');
 chai.use(chaiHttp);
 const expect = chai.expect;
 
-describe('Auth API', () => {
+describe('Authentication Panel API', () => {
   // Restore all stubs after each test so they don't bleed into the next one
   afterEach(() => sinon.restore());
 
