@@ -19,9 +19,6 @@ const Navbar = () => {
       <div className="flex items-center gap-6 text-sm">
         {user ? (
           <>
-            {user.role === 'member' && (
-              <Link to="/class-booking" className="hover:text-green-200">Browse New Classes</Link>
-            )}
             {user.role === 'admin' && (
               <>
                 <Link to="/class-booking" className="hover:text-green-200">Classes</Link>
@@ -29,7 +26,6 @@ const Navbar = () => {
                 <Link to="/admin" className="hover:text-green-200">Admin</Link>
               </>
             )}
-            <button onClick={handleLogout} className="hover:text-green-200">Logout</button>
           </>
         ) : (
           <>
