@@ -26,7 +26,7 @@ function findByIdResult(data) {
   return p;
 }
 
-describe('Member Profile API', () => {
+describe('Member Panel API', () => {
   afterEach(() => sinon.restore());
 
   // ── View Profile (Read) ──────────────────────────────────────────────────────
