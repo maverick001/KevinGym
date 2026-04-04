@@ -36,7 +36,7 @@ const AdminDashboard = () => {
     }
   };
 
-  useEffect(() => { if (user) fetchUsers(); }, [user]);
+  useEffect(() => { if (user) fetchUsers(); }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreate = async () => {
     try {

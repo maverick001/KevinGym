@@ -146,6 +146,15 @@ const VendorPanel = () => {
               ))}
             </tbody>
           </table>
+          <div className="flex gap-2 p-4 border-t border-gray-200">
+            <button
+              onClick={handleDelete}
+              disabled={selected === null}
+              className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Delete
+            </button>
+          </div>
         </div>
 
         {/* System Notifications */}
