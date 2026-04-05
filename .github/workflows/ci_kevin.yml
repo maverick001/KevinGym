@@ -1,4 +1,4 @@
-name: Backend CICD Workflow
+name: Backend cicd workflow
 
 on:
   push:
