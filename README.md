@@ -1,5 +1,7 @@
 ## Kevin's Gym Management App 💪
 
+![Welcome Image](./frontend/public/welcome_img.png)
+
 Welcome to my gym management app. This is a full-stack web application designed to help gym owners to manage gym members, gym course vendors and daily gym operations. This app has role based access control, allowing Admins Gym Members and Course Vendors to use the system based on their login account types.
 
 ### ✨ Main Features
@@ -24,13 +26,13 @@ Follow these magical steps to get the app running on your machine:
    ```
 
 2. **Start the Application** 🏃‍♂️
-   Fire up both the backend and frontend at the same time:
+   Run following command in the root directory of the app:
 
    ```powershell
    npm run dev
    ```
 
 3. **Enjoy!** 🎉
-   The frontend will automatically pop up in your browser (usually at `http://localhost:3000`).
+   The frontend will automatically pop up in your browser at `http://localhost:3000`.
 
-   My app is also hosted on AWS EC2 instance. You can access it at `http://3.25.108.170`.
+   This app is also hosted on my AWS EC2 instance. You can visit it at `http://3.25.108.170`.
