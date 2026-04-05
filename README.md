@@ -1,8 +1,13 @@
 ## Kevin's Gym Management App 💪
 
-![Welcome Image](./frontend/public/welcome_img.png)
+<p align="center">
+  <img src="./frontend/public/welcome_img.png" alt="Welcome Image">
+</p>
 
-Welcome to my gym management app. This is a full-stack web application designed to help gym owners to manage gym members, gym course vendors and daily gym operations. This app has role based access control, allowing Admins Gym Members and Course Vendors to use the system based on their login account types.
+Welcome to my gym management app.
+This is a full-stack web application designed to help gym owners to manage gym members, gym course vendors and daily gym operations. It has role based access control, which allows Admins, Gym Members and Course Vendors to use the system based on their login account types.
+
+---
 
 ### ✨ Main Features
 
@@ -20,7 +25,7 @@ Follow these magical steps to get the app running on your machine:
 1. **Install Dependencies** 📦
    Open your terminal in the root directory and install everything at once using the handy script:
 
-   ```powershell
+   ```bash
    npm install -g concurrently
    npm run install-all
    ```
@@ -28,7 +33,7 @@ Follow these magical steps to get the app running on your machine:
 2. **Start the Application** 🏃‍♂️
    Run following command in the root directory of the app:
 
-   ```powershell
+   ```bash
    npm run dev
    ```
 
