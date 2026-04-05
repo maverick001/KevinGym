@@ -11,19 +11,19 @@ This is a full-stack web application designed to help gym owners to manage gym m
 
 ### ✨ Main Features
 
-- **Authentication & Authorization**: Secure login system with distinct panels for **Admins**, **Gym Members**, and **Course Vendors**.
-- **CRUD Operations**: Full Create, Read, Update, and Delete functionality tailored for gym operations.
-- **Beautiful UI**: Built with React and CSS for a modern, responsive design.
-- **MongoDB Integration**: Robust backend to store all member and vendor data.
+- **Authentication & Authorization**: Register or login to access distinct pages for **Admins**, **Gym Members**, and **Course Vendors**.
+- **CRUD Operations**: Full Create, Read, Update, and Delete functionality tailored for classic gym operations.
+- **Modern UI**: Built with React and CSS for a modern, responsive design.
+- **MongoDB Atlas**: Used cloud database to store all users data.
 
 ---
 
-### 🚀 How to Run Locally
+### 🚀 How to Run the App Locally
 
 Please follow below steps to launch the app:
 
 1. **Install Dependencies** 📦
-   Open your terminal in the root directory and install everything at once using the handy script:
+   Open your terminal in the root directory and run below command:
 
    ```powershell
    npm install -g concurrently
@@ -31,7 +31,7 @@ Please follow below steps to launch the app:
    ```
 
 2. **Set up Environment Variables** ⚙️
-   Create a `.env` file in the `backend` directory and add your MongoDB connection string and JSON Web Token secret:
+   Create a `.env` file under the `backend` directory and add your Mongo_URI string and JWT_SECRET token to access the database:
 
    ```env
    PORT=6001
@@ -40,7 +40,7 @@ Please follow below steps to launch the app:
    ```
 
 3. **Start the Application** 🏃‍♂️
-   Run following command in the root directory of the app:
+   Run the following command in the root directory of the app:
 
    ```powershell
    npm run dev
