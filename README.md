@@ -22,7 +22,7 @@ This is a full-stack web application designed to help gym owners to manage gym m
 
 Please follow below steps to launch the app:
 
-1. **Install Dependencies** 📦
+1. **Install Dependencies** 📦  
    Open your terminal in the root directory and run below command:
 
    ```powershell
@@ -30,7 +30,7 @@ Please follow below steps to launch the app:
    npm run install-all
    ```
 
-2. **Set up Environment Variables** ⚙️
+2. **Set up Environment Variables** ⚙️  
    Create a `.env` file under the `backend` directory and add your Mongo_URI string and JWT_SECRET token to access the database:
 
    ```env
@@ -39,14 +39,15 @@ Please follow below steps to launch the app:
    JWT_SECRET=your_jwt_secret_key
    ```
 
-3. **Start the Application** 🏃‍♂️
+3. **Start the Application** 🏃‍♂️  
    Run the following command in the root directory of the app:
 
    ```powershell
    npm run dev
    ```
 
-4. **Enjoy!** 🎉
+4. **Enjoy!** 🎉  
    The frontend will automatically pop up in your browser at `http://localhost:3000`.
 
-   **Note**: This app is also hosted on my AWS EC2 instance. You can visit it at `http://3.25.108.170`.
+   **Note**:  
+   This app is also hosted on my AWS EC2 instance. You can visit it at `http://3.25.108.170`.
