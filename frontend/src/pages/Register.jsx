@@ -53,7 +53,7 @@ const Register = () => {
               onChange={() => setFormData({ ...formData, role: 'member' })}
               className="accent-gym-green"
             />
-            Member
+            Gym Member
           </label>
           <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
             <input
