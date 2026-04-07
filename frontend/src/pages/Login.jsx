@@ -37,7 +37,7 @@ const Login = () => {
           <form onSubmit={handleSubmit} className="px-6 py-5">
             <input
               type="email"
-              placeholder="User Name"
+              placeholder="User Email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               className="w-full mb-3 px-3 py-2 border border-gray-300 rounded text-sm focus:outline-none focus:border-gym-green"

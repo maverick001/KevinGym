@@ -155,6 +155,13 @@ const VendorPanel = () => {
           </table>
           <div className="flex gap-2 p-4 border-t border-gray-200">
             <button
+              onClick={() => selected !== null && handleSelectForEdit(selected)}
+              disabled={selected === null}
+              className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Edit
+            </button>
+            <button
               onClick={handleDelete}
               disabled={selected === null}
               className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
