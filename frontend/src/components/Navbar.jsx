@@ -25,7 +25,7 @@ const Navbar = () => {
           </>
         ) : (
           <>
-            <Link to="/login" className="hover:text-green-200">Contact Us</Link>
+            <a href="mailto:admin@kevinsgym.com" className="hover:text-green-200">Contact Us</a>
           </>
         )}
       </div>
