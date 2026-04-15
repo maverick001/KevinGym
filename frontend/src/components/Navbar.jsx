@@ -19,9 +19,8 @@ const Navbar = () => {
       <div className="flex items-center gap-6 text-sm">
         {user ? (
           <>
-            {(user.role === 'admin' || user.role === 'member' || user.role === 'vendor') && (
-              <button onClick={handleLogout} className="hover:text-green-200">Logout</button>
-            )}
+            <a href="mailto:admin@kevinsgym.com" className="hover:text-green-200">Contact Us</a>
+            <button onClick={handleLogout} className="hover:text-green-200">Log Out</button>
           </>
         ) : (
           <>
