@@ -183,7 +183,7 @@ const MemberPanel = () => {
             </button>
             <button
               onClick={() => navigate('/class-booking')}
-              className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
+              className="px-4 py-1.5 border border-green-500 rounded text-sm text-green-600 hover:bg-green-50"
             >
               Browse New Class
             </button>
