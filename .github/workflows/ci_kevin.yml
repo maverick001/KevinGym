@@ -36,7 +36,8 @@ jobs:
       - name: Deploy
         run: |
           cd ~/kevingym
-          git pull origin main
+          git fetch origin
+          git reset --hard origin/main
           npm run install-all
           npm run build --prefix frontend
           pm2 restart kevingym
