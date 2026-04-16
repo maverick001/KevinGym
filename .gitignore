@@ -9,6 +9,7 @@ frontend/build
 # misc
 .DS_Store
 .claude/
+CLAUDE.md
 .env
 .env.local
 .env.development.local
