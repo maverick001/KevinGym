@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useNotifications } from '../context/NotificationContext';
 import axiosInstance from '../axiosConfig';
 
 const BOOKED_CLASSES = [
@@ -23,13 +24,19 @@ const INITIAL_NOTIFICATIONS = [
 
 const MemberPanel = () => {
   const { user } = useAuth();
+  const { notifications: liveNotifications } = useNotifications();
   const navigate = useNavigate();
   const [profile, setProfile] = useState({ name: user?.name || '', email: user?.email || '' });
   const [membershipStatus] = useState('Active');
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const notifications = liveNotifications.length > 0
+    ? liveNotifications.map((n, i) => ({
+        id: `MSG-${String(i + 1).padStart(3, '0')}`,
+        content: n.message,
+      }))
+    : INITIAL_NOTIFICATIONS;
   const [selectedNotif, setSelectedNotif] = useState(null);
   const [flaggedNotifs, setFlaggedNotifs] = useState(new Set());
 
@@ -233,7 +240,6 @@ const MemberPanel = () => {
             <button
               onClick={() => {
                 if (selectedNotif === null) return;
-                setNotifications(prev => prev.filter((_, i) => i !== selectedNotif));
                 setFlaggedNotifs(prev => {
                   const next = new Set();
                   prev.forEach(idx => { if (idx < selectedNotif) next.add(idx); else if (idx > selectedNotif) next.add(idx - 1); });
