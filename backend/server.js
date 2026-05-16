@@ -6,6 +6,8 @@ const path = require('path');
 const Database = require('./config/db');
 const LoggerObserver = require('./observers/LoggerObserver');
 const NotificationObserver = require('./observers/NotificationObserver');
+const AuthStrategyContext = require('./strategies/AuthStrategyContext');
+const JWTStrategy = require('./strategies/JWTStrategy');
 
 dotenv.config();
 
@@ -21,6 +23,7 @@ app.use('/api/courses', require('./routes/courseRoutes'));
 
 new LoggerObserver();
 new NotificationObserver();
+AuthStrategyContext.use(new JWTStrategy());
 //app.use('/api/tasks', require('./routes/taskRoutes'));
 
 app.use(express.static(path.join(__dirname, '../frontend/build')));
