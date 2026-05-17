@@ -2,6 +2,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const gymEvents = require('../events/gymEvents');
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: '30d' });
@@ -15,6 +16,7 @@ const registerUser = async (req, res) => {
 
         const assignedRole = role === 'vendor' ? 'vendor' : 'member';
         const user = await User.create({ name, email, password, role: assignedRole });
+        gymEvents.emit('userRegistered', { name: user.name, email: user.email, role: user.role });
         res.status(201).json({ id: user.id, name: user.name, email: user.email, role: user.role, token: generateToken(user.id) });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -67,6 +69,7 @@ const updateUserProfile = async (req, res) => {
         if (password) user.password = password;
 
         const updatedUser = await user.save();
+        gymEvents.emit('userUpdated', { name: updatedUser.name, email: updatedUser.email });
         res.json({ id: updatedUser.id, name: updatedUser.name, email: updatedUser.email, role: updatedUser.role, university: updatedUser.university, address: updatedUser.address, token: generateToken(updatedUser.id) });
     } catch (error) {
         res.status(500).json({ message: error.message });
