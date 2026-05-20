@@ -2,18 +2,40 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
 
+<<<<<<< HEAD
 const formatDate = (iso) =>
   new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+=======
+
+const INITIAL_NOTIFICATIONS = [
+  { message: 'New member sign-up: Sarah Mitchell',          date: 'Mar 23' },
+  { message: 'Class cancelled: Boxing Basics (Mar 24)',     date: 'Mar 23' },
+  { message: 'Vendor request: Priya Nair — Happy Yoga Studio', date: 'Mar 22' },
+  { message: 'Payment overdue: James Thornton',             date: 'Mar 22' },
+  { message: 'System maintenance scheduled: Mar 30, 2am–4am', date: 'Mar 21' },
+  { message: 'New class added: Dance Cardio (Mar 29)',      date: 'Mar 21' },
+  { message: 'Member feedback received: Daniel Osei',       date: 'Mar 20' },
+  { message: 'Monthly report ready for download',           date: 'Mar 20' },
+];
+>>>>>>> 9fa6772 (membership feature with state pattern)
 
 const ROLE_LABELS = { member: 'Member', admin: 'Admin', vendor: 'Vendor' };
+
+const ALLOWED_TRANSITIONS = {
+  trial:     ['active', 'expired'],
+  active:    ['suspended', 'expired'],
+  suspended: ['active', 'expired'],
+  expired:   ['trial', 'active'],
+};
 
 const AdminDashboard = () => {
   const { user } = useAuth();
   const authHeader = { headers: { Authorization: `Bearer ${user?.token}` } };
 
   const [users, setUsers] = useState([]);
-  const [selected, setSelected] = useState(null); // user being edited
+  const [selected, setSelected] = useState(null);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', role: 'member' });
+  const [membershipTransition, setMembershipTransition] = useState('');
 
   const [notifications, setNotifications] = useState([]);
   const [showNotifForm, setShowNotifForm] = useState(false);
@@ -57,11 +79,23 @@ const AdminDashboard = () => {
     try {
       const name = `${form.firstName} ${form.lastName}`.trim();
       const res = await axiosInstance.put(`/api/admin/users/${selected._id}`, { name, email: form.email, role: form.role }, authHeader);
-      setUsers(users.map(u => u._id === selected._id ? { ...u, ...res.data } : u));
+      let updatedUser = { ...res.data };
+
+      if (membershipTransition) {
+        const mRes = await axiosInstance.put(
+          `/api/membership/${selected._id}/transition`,
+          { newStatus: membershipTransition },
+          authHeader
+        );
+        updatedUser.membershipStatus = mRes.data.status;
+      }
+
+      setUsers(users.map(u => u._id === selected._id ? { ...u, ...updatedUser } : u));
       setSelected(null);
       setForm({ firstName: '', lastName: '', email: '', role: 'member' });
-    } catch {
-      alert('Failed to update user.');
+      setMembershipTransition('');
+    } catch (e) {
+      alert(e.response?.data?.message || 'Failed to update user.');
     }
   };
 
@@ -69,6 +103,7 @@ const AdminDashboard = () => {
     const [firstName, ...rest] = (u.name || '').split(' ');
     setSelected(u);
     setForm({ firstName, lastName: rest.join(' '), email: u.email, role: u.role });
+    setMembershipTransition('');
   };
 
   const handleDelete = async (id) => {
@@ -130,6 +165,18 @@ const AdminDashboard = () => {
               <option value="vendor">Vendor</option>
               <option value="admin">Admin</option>
             </select>
+            {selected && (
+              <select
+                value={membershipTransition}
+                onChange={(e) => setMembershipTransition(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Membership: {selected.membershipStatus || 'trial'} (no change)</option>
+                {(ALLOWED_TRANSITIONS[selected.membershipStatus || 'trial'] || []).map(s => (
+                  <option key={s} value={s}>Transition → {s}</option>
+                ))}
+              </select>
+            )}
             <div className="flex gap-2 pt-1">
               <button
                 onClick={handleCreate}
@@ -156,6 +203,7 @@ const AdminDashboard = () => {
                 <th className="text-left px-4 py-2 font-semibold text-gray-700">Name</th>
                 <th className="text-left px-4 py-2 font-semibold text-gray-700">Email</th>
                 <th className="text-left px-4 py-2 font-semibold text-gray-700">Role</th>
+                <th className="text-left px-4 py-2 font-semibold text-gray-700">Membership</th>
               </tr>
             </thead>
             <tbody>
@@ -168,6 +216,14 @@ const AdminDashboard = () => {
                   <td className="px-4 py-2 text-gray-600">{u.name}</td>
                   <td className="px-4 py-2 text-gray-600">{u.email}</td>
                   <td className="px-4 py-2 text-gray-600">{ROLE_LABELS[u.role] ?? u.role}</td>
+                  <td className="px-4 py-2">
+                    <span className={`px-1.5 py-0.5 rounded text-xs font-semibold uppercase ${
+                      u.membershipStatus === 'active'    ? 'bg-green-100 text-green-700' :
+                      u.membershipStatus === 'trial'     ? 'bg-blue-100 text-blue-700'  :
+                      u.membershipStatus === 'suspended' ? 'bg-yellow-100 text-yellow-700' :
+                                                           'bg-red-100 text-red-700'
+                    }`}>{u.membershipStatus || 'trial'}</span>
+                  </td>
                 </tr>
               ))}
             </tbody>

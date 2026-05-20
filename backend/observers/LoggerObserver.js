@@ -17,6 +17,9 @@ class LoggerObserver {
     gymEvents.on('courseCreated', ({ name, vendorId }) =>
       console.log(`[LOG] New course created: ${name} by vendor ${vendorId}`)
     );
+    gymEvents.on('membershipTransitioned', ({ name, email, from, to }) =>
+      console.log(`[LOG] Membership changed for ${name} (${email}): ${from} → ${to}`)
+    );
   }
 }
 

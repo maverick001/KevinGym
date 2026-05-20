@@ -31,7 +31,7 @@ const MemberPanel = () => {
   const { notifications: liveNotifications } = useNotifications();
   const navigate = useNavigate();
   const [profile, setProfile] = useState({ name: user?.name || '', email: user?.email || '' });
-  const [membershipStatus] = useState('Active');
+  const [membership, setMembership] = useState({ status: 'trial', description: '', canBookClass: true, canAccessContent: true });
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -44,6 +44,7 @@ const MemberPanel = () => {
   const [flaggedNotifs, setFlaggedNotifs] = useState(new Set());
 
   useEffect(() => {
+<<<<<<< HEAD
     if (liveNotifications.length > 0) {
       setNotifications(liveNotifications.map((n) => ({
         datetime: n.createdAt ? formatDatetime(n.createdAt) : '—',
@@ -60,13 +61,25 @@ const MemberPanel = () => {
       try {
         const res = await axiosInstance.get('/api/auth/profile', authHeader);
         setProfile({ name: res.data.name, email: res.data.email });
+=======
+    if (!user) return;
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const [profileRes, membershipRes] = await Promise.all([
+          axiosInstance.get('/api/auth/profile', { headers: { Authorization: `Bearer ${user.token}` } }),
+          axiosInstance.get('/api/membership/status', { headers: { Authorization: `Bearer ${user.token}` } }),
+        ]);
+        setProfile({ name: profileRes.data.name, email: profileRes.data.email });
+        setMembership(membershipRes.data);
+>>>>>>> 9fa6772 (membership feature with state pattern)
       } catch {
         alert('Failed to fetch profile.');
       } finally {
         setLoading(false);
       }
     };
-    if (user) fetchProfile();
+    fetchData();
   }, [user]);
 
   useEffect(() => {
@@ -179,8 +192,16 @@ const MemberPanel = () => {
               <input type="text" defaultValue="Jan 2024" disabled className={inputClass} />
             </div>
             <div className="flex items-center gap-2">
-              <span className={labelClass}>Membership Status</span>
-              <input type="text" value={membershipStatus} disabled className={inputClass} />
+              <span className={labelClass}>Membership</span>
+              <div className="flex-1 flex items-center gap-2">
+                <span className={`px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide ${
+                  membership.status === 'active'    ? 'bg-green-100 text-green-700' :
+                  membership.status === 'trial'     ? 'bg-blue-100 text-blue-700'  :
+                  membership.status === 'suspended' ? 'bg-yellow-100 text-yellow-700' :
+                                                      'bg-red-100 text-red-700'
+                }`}>{membership.status}</span>
+                <span className="text-xs text-gray-500">{membership.description}</span>
+              </div>
             </div>
             <div className="flex gap-2 pt-2">
               <button
@@ -251,7 +272,9 @@ const MemberPanel = () => {
             </button>
             <button
               onClick={() => navigate('/class-booking')}
-              className="px-4 py-1.5 border border-green-500 rounded text-sm text-green-600 hover:bg-green-50"
+              disabled={!membership.canBookClass}
+              title={!membership.canBookClass ? membership.description : ''}
+              className="px-4 py-1.5 border border-green-500 rounded text-sm text-green-600 hover:bg-green-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Browse New Class
             </button>
