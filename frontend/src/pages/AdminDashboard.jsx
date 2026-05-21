@@ -36,18 +36,12 @@ const AdminDashboard = () => {
   const [showNotifForm, setShowNotifForm] = useState(false);
   const [notifForm, setNotifForm] = useState({ message: '', target: 'members' });
 
-  const apiError = (e, fallback) => {
-    if (e.response?.status === 403) return alert('Access denied. Admin role required.');
-    if (e.response?.status === 429) return alert('Too many requests. Please slow down.');
-    alert(e.response?.data?.message || fallback);
-  };
-
   const fetchUsers = async () => {
     try {
       const res = await axiosInstance.get('/api/admin/users', authHeader);
       setUsers(res.data);
-    } catch (e) {
-      apiError(e, 'Failed to load users.');
+    } catch {
+      alert('Failed to load users.');
     }
   };
 
@@ -59,7 +53,7 @@ const AdminDashboard = () => {
       setUsers([...users, res.data]);
       setForm({ firstName: '', lastName: '', email: '', role: 'member' });
     } catch (e) {
-      apiError(e, 'Failed to create user.');
+      alert(e.response?.data?.message || 'Failed to create user.');
     }
   };
 
@@ -83,8 +77,8 @@ const AdminDashboard = () => {
       setSelected(null);
       setForm({ firstName: '', lastName: '', email: '', role: 'member' });
       setMembershipTransition('');
-    } catch (e) {
-      apiError(e, 'Failed to update user.');
+    } catch {
+      alert('Failed to update user.');
     }
   };
 
@@ -100,8 +94,8 @@ const AdminDashboard = () => {
       await axiosInstance.delete(`/api/admin/users/${id}`, authHeader);
       setUsers(users.filter(u => u._id !== id));
       if (selected?._id === id) { setSelected(null); setForm({ firstName: '', lastName: '', email: '', role: 'member' }); }
-    } catch (e) {
-      apiError(e, 'Failed to delete user.');
+    } catch {
+      alert('Failed to delete user.');
     }
   };
 

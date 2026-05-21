@@ -8,6 +8,7 @@ import MemberPanel from './pages/MemberPanel';
 import AdminDashboard from './pages/AdminDashboard';
 import VendorPanel from './pages/VendorPanel';
 import ClassBookingPanel from './pages/ClassBookingPanel';
+import WorkoutPlanPage from './pages/WorkoutPlanPage';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/tasks" element={<Tasks />} />
+        <Route path="/workout-plan" element={<WorkoutPlanPage />} />
       </Routes>
     </Router>
   );

@@ -21,6 +21,7 @@ app.use('/api/admin', require('./routes/adminRoutes'));
 app.use('/api/notifications', require('./routes/notificationRoutes'));
 app.use('/api/courses', require('./routes/courseRoutes'));
 app.use('/api/membership', require('./routes/membershipRoutes'));
+app.use('/api/workout-plans', require('./routes/workoutPlanRoutes'));
 
 new LoggerObserver();
 new NotificationObserver();

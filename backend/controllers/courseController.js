@@ -24,13 +24,4 @@ const getCourses = async (req, res) => {
   }
 };
 
-const deleteCourse = async (req, res) => {
-  try {
-    await req.resource.deleteOne();
-    res.json({ message: 'Course deleted.' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-module.exports = { createCourse, getCourses, deleteCourse };
+module.exports = { createCourse, getCourses };
