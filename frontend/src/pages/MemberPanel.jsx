@@ -44,7 +44,6 @@ const MemberPanel = () => {
   const [flaggedNotifs, setFlaggedNotifs] = useState(new Set());
 
   useEffect(() => {
-<<<<<<< HEAD
     if (liveNotifications.length > 0) {
       setNotifications(liveNotifications.map((n) => ({
         datetime: n.createdAt ? formatDatetime(n.createdAt) : '—',
@@ -56,23 +55,16 @@ const MemberPanel = () => {
   const authHeader = { headers: { Authorization: `Bearer ${user?.token}` } };
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      setLoading(true);
-      try {
-        const res = await axiosInstance.get('/api/auth/profile', authHeader);
-        setProfile({ name: res.data.name, email: res.data.email });
-=======
     if (!user) return;
     const fetchData = async () => {
       setLoading(true);
       try {
         const [profileRes, membershipRes] = await Promise.all([
-          axiosInstance.get('/api/auth/profile', { headers: { Authorization: `Bearer ${user.token}` } }),
-          axiosInstance.get('/api/membership/status', { headers: { Authorization: `Bearer ${user.token}` } }),
+          axiosInstance.get('/api/auth/profile', authHeader),
+          axiosInstance.get('/api/membership/status', authHeader),
         ]);
         setProfile({ name: profileRes.data.name, email: profileRes.data.email });
         setMembership(membershipRes.data);
->>>>>>> 9fa6772 (membership feature with state pattern)
       } catch {
         alert('Failed to fetch profile.');
       } finally {
@@ -80,7 +72,7 @@ const MemberPanel = () => {
       }
     };
     fetchData();
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     const fetchBookings = async () => {

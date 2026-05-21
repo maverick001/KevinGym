@@ -2,22 +2,8 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
 
-<<<<<<< HEAD
 const formatDate = (iso) =>
   new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-=======
-
-const INITIAL_NOTIFICATIONS = [
-  { message: 'New member sign-up: Sarah Mitchell',          date: 'Mar 23' },
-  { message: 'Class cancelled: Boxing Basics (Mar 24)',     date: 'Mar 23' },
-  { message: 'Vendor request: Priya Nair — Happy Yoga Studio', date: 'Mar 22' },
-  { message: 'Payment overdue: James Thornton',             date: 'Mar 22' },
-  { message: 'System maintenance scheduled: Mar 30, 2am–4am', date: 'Mar 21' },
-  { message: 'New class added: Dance Cardio (Mar 29)',      date: 'Mar 21' },
-  { message: 'Member feedback received: Daniel Osei',       date: 'Mar 20' },
-  { message: 'Monthly report ready for download',           date: 'Mar 20' },
-];
->>>>>>> 9fa6772 (membership feature with state pattern)
 
 const ROLE_LABELS = { member: 'Member', admin: 'Admin', vendor: 'Vendor' };
 
@@ -42,12 +28,18 @@ const AdminDashboard = () => {
   const [notifForm, setNotifForm] = useState({ message: '', target: 'members' });
   const [selectedNotif, setSelectedNotif] = useState(null);
 
+  const apiError = (e, fallback) => {
+    if (e.response?.status === 403) return alert('Access denied. Admin role required.');
+    if (e.response?.status === 429) return alert('Too many requests. Please slow down.');
+    alert(e.response?.data?.message || fallback);
+  };
+
   const fetchUsers = async () => {
     try {
       const res = await axiosInstance.get('/api/admin/users', authHeader);
       setUsers(res.data);
-    } catch {
-      alert('Failed to load users.');
+    } catch (e) {
+      apiError(e, 'Failed to load users.');
     }
   };
 
@@ -70,7 +62,7 @@ const AdminDashboard = () => {
       setUsers([...users, res.data]);
       setForm({ firstName: '', lastName: '', email: '', role: 'member' });
     } catch (e) {
-      alert(e.response?.data?.message || 'Failed to create user.');
+      apiError(e, 'Failed to create user.');
     }
   };
 
@@ -95,7 +87,7 @@ const AdminDashboard = () => {
       setForm({ firstName: '', lastName: '', email: '', role: 'member' });
       setMembershipTransition('');
     } catch (e) {
-      alert(e.response?.data?.message || 'Failed to update user.');
+      apiError(e, 'Failed to update user.');
     }
   };
 
@@ -111,8 +103,8 @@ const AdminDashboard = () => {
       await axiosInstance.delete(`/api/admin/users/${id}`, authHeader);
       setUsers(users.filter(u => u._id !== id));
       if (selected?._id === id) { setSelected(null); setForm({ firstName: '', lastName: '', email: '', role: 'member' }); }
-    } catch {
-      alert('Failed to delete user.');
+    } catch (e) {
+      apiError(e, 'Failed to delete user.');
     }
   };
 

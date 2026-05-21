@@ -55,9 +55,8 @@ const patchCourse = async (req, res) => {
 
 const deleteCourse = async (req, res) => {
   try {
-    const course = await Course.findByIdAndDelete(req.params.id);
-    if (!course) return res.status(404).json({ message: 'Course not found' });
-    res.json({ message: 'Course deleted' });
+    await req.resource.deleteOne();
+    res.json({ message: 'Course deleted.' });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
