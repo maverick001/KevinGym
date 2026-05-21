@@ -270,6 +270,12 @@ const MemberPanel = () => {
             >
               Browse New Class
             </button>
+            <button
+              onClick={() => navigate('/workout-plan')}
+              className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
+            >
+              Workout Plan
+            </button>
           </div>
         </div>
 

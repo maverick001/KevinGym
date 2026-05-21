@@ -14,6 +14,8 @@ const INITIAL_NOTIFICATIONS = [
 
 const STUDIOS = ['Happy Yoga Studio', 'Studio A', 'Studio B', 'Spin Room', 'Yoga Loft'];
 
+const EMPTY_EXERCISE = { name: '', sets: 3, reps: '10', notes: '' };
+
 const VendorPanel = () => {
   const { user } = useAuth();
   const [form, setForm] = useState({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
@@ -23,6 +25,12 @@ const VendorPanel = () => {
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const [selectedNotif, setSelectedNotif] = useState(null);
   const [flaggedNotifs, setFlaggedNotifs] = useState(new Set());
+
+  const [planForm, setPlanForm] = useState({
+    memberEmail: '', title: '', difficulty: 'beginner', durationWeeks: 4, notes: '',
+  });
+  const [exercises, setExercises] = useState([{ ...EMPTY_EXERCISE }]);
+  const [planStatus, setPlanStatus] = useState('');
 
   useEffect(() => {
     axiosInstance.get('/api/courses', {
@@ -109,6 +117,27 @@ const VendorPanel = () => {
       alert(err.response?.data?.message || 'Failed to delete course.');
     }
   };
+
+  const handleAssignPlan = async () => {
+    if (!planForm.memberEmail || !planForm.title || exercises.every(e => !e.name)) {
+      return setPlanStatus('Please fill in member email, plan title, and at least one exercise.');
+    }
+    try {
+      await axiosInstance.post('/api/workout-plans', {
+        ...planForm,
+        durationWeeks: parseInt(planForm.durationWeeks, 10),
+        exercises: exercises.filter(e => e.name),
+      }, { headers: { Authorization: `Bearer ${user?.token}` } });
+      setPlanStatus(`Plan "${planForm.title}" assigned successfully.`);
+      setPlanForm({ memberEmail: '', title: '', difficulty: 'beginner', durationWeeks: 4, notes: '' });
+      setExercises([{ ...EMPTY_EXERCISE }]);
+    } catch (e) {
+      setPlanStatus(e.response?.data?.message || 'Failed to assign plan.');
+    }
+  };
+
+  const updateExercise = (i, field, value) =>
+    setExercises(prev => prev.map((ex, idx) => idx === i ? { ...ex, [field]: value } : ex));
 
   const inputClass = 'w-full px-2 py-1.5 border border-gray-300 rounded text-sm text-gray-700 focus:outline-none focus:border-gym-green';
   const cardHeader = 'bg-gray-100 border-b border-gray-300 px-4 py-2 text-sm font-medium text-gray-700';
@@ -285,6 +314,114 @@ const VendorPanel = () => {
         </div>
 
       </div>
+      {/* Workout Plan Builder */}
+      <div className="px-8 pb-8">
+        <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
+          <div className={cardHeader}>Workout Plan Builder</div>
+          <div className="p-4 grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Left — Plan details */}
+            <div className="space-y-3">
+              <input
+                type="email"
+                placeholder="Member Email"
+                value={planForm.memberEmail}
+                onChange={e => setPlanForm({ ...planForm, memberEmail: e.target.value })}
+                className={inputClass}
+              />
+              <input
+                type="text"
+                placeholder="Plan Title (e.g. 8-Week Strength)"
+                value={planForm.title}
+                onChange={e => setPlanForm({ ...planForm, title: e.target.value })}
+                className={inputClass}
+              />
+              <div className="flex gap-2">
+                <select
+                  value={planForm.difficulty}
+                  onChange={e => setPlanForm({ ...planForm, difficulty: e.target.value })}
+                  className={inputClass}
+                >
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+                <input
+                  type="number"
+                  min={1}
+                  placeholder="Weeks"
+                  value={planForm.durationWeeks}
+                  onChange={e => setPlanForm({ ...planForm, durationWeeks: e.target.value })}
+                  className={inputClass}
+                />
+              </div>
+              <textarea
+                placeholder="Plan notes (optional)"
+                value={planForm.notes}
+                onChange={e => setPlanForm({ ...planForm, notes: e.target.value })}
+                rows={3}
+                className={`${inputClass} resize-none`}
+              />
+            </div>
+
+            {/* Right — Exercises */}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Exercises</p>
+              {exercises.map((ex, i) => (
+                <div key={i} className="flex gap-2 items-center">
+                  <input
+                    type="text"
+                    placeholder="Exercise name"
+                    value={ex.name}
+                    onChange={e => updateExercise(i, 'name', e.target.value)}
+                    className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm text-gray-700 focus:outline-none focus:border-gym-green"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Sets"
+                    value={ex.sets}
+                    onChange={e => updateExercise(i, 'sets', parseInt(e.target.value, 10))}
+                    className="w-14 px-2 py-1.5 border border-gray-300 rounded text-sm text-gray-700 focus:outline-none focus:border-gym-green"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Reps"
+                    value={ex.reps}
+                    onChange={e => updateExercise(i, 'reps', e.target.value)}
+                    className="w-16 px-2 py-1.5 border border-gray-300 rounded text-sm text-gray-700 focus:outline-none focus:border-gym-green"
+                  />
+                  <button
+                    onClick={() => setExercises(prev => prev.filter((_, idx) => idx !== i))}
+                    className="text-red-400 hover:text-red-600 text-sm px-1"
+                  >✕</button>
+                </div>
+              ))}
+              <button
+                onClick={() => setExercises(prev => [...prev, { ...EMPTY_EXERCISE }])}
+                className="text-sm text-gym-green hover:underline mt-1"
+              >
+                + Add Exercise
+              </button>
+            </div>
+
+          </div>
+
+          <div className="flex items-center gap-4 px-4 pb-4 border-t border-gray-100 pt-3">
+            <button
+              onClick={handleAssignPlan}
+              className="px-5 py-1.5 bg-gym-green text-white rounded text-sm font-medium hover:opacity-90"
+            >
+              Assign Plan
+            </button>
+            {planStatus && (
+              <span className={`text-sm ${planStatus.includes('success') ? 'text-green-600' : 'text-red-500'}`}>
+                {planStatus}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };
