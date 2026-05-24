@@ -16,13 +16,6 @@ const INITIAL_NOTIFICATIONS = [
 
 const ROLE_LABELS = { member: 'Member', admin: 'Admin', vendor: 'Vendor' };
 
-const ALLOWED_TRANSITIONS = {
-  trial:     ['active', 'expired'],
-  active:    ['suspended', 'expired'],
-  suspended: ['active', 'expired'],
-  expired:   ['trial', 'active'],
-};
-
 const AdminDashboard = () => {
   const { user } = useAuth();
   const authHeader = { headers: { Authorization: `Bearer ${user?.token}` } };
@@ -31,6 +24,7 @@ const AdminDashboard = () => {
   const [selected, setSelected] = useState(null);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', role: 'member' });
   const [membershipTransition, setMembershipTransition] = useState('');
+  const [allowedTransitions, setAllowedTransitions] = useState([]);
 
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const [showNotifForm, setShowNotifForm] = useState(false);
@@ -77,16 +71,23 @@ const AdminDashboard = () => {
       setSelected(null);
       setForm({ firstName: '', lastName: '', email: '', role: 'member' });
       setMembershipTransition('');
+      setAllowedTransitions([]);
     } catch {
       alert('Failed to update user.');
     }
   };
 
-  const handleSelectForEdit = (u) => {
+  const handleSelectForEdit = async (u) => {
     const [firstName, ...rest] = (u.name || '').split(' ');
     setSelected(u);
     setForm({ firstName, lastName: rest.join(' '), email: u.email, role: u.role });
     setMembershipTransition('');
+    try {
+      const res = await axiosInstance.get(`/api/membership/${u._id}/status`, authHeader);
+      setAllowedTransitions(res.data.allowedTransitions);
+    } catch {
+      setAllowedTransitions([]);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -156,7 +157,7 @@ const AdminDashboard = () => {
                 className={inputClass}
               >
                 <option value="">Membership: {selected.membershipStatus || 'trial'} (no change)</option>
-                {(ALLOWED_TRANSITIONS[selected.membershipStatus || 'trial'] || []).map(s => (
+                {allowedTransitions.map(s => (
                   <option key={s} value={s}>Transition → {s}</option>
                 ))}
               </select>

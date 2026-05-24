@@ -1,4 +1,4 @@
-const User = require('../models/User');
+﻿const User = require('../models/User');
 const MembershipContext = require('../membership/MembershipContext');
 const gymEvents = require('../events/gymEvents');
 
@@ -13,6 +13,20 @@ const getMembershipStatus = async (req, res) => {
       description:        ctx.getDescription(),
       canBookClass:       ctx.canBookClass(),
       canAccessContent:   ctx.canAccessContent(),
+      allowedTransitions: ctx.allowedTransitions(),
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getMembershipStatusById = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.userId);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+    const ctx = new MembershipContext(user.membershipStatus);
+    res.json({
+      status:             ctx.getName(),
       allowedTransitions: ctx.allowedTransitions(),
     });
   } catch (error) {
@@ -53,4 +67,4 @@ const transitionMembership = async (req, res) => {
   }
 };
 
-module.exports = { getMembershipStatus, transitionMembership };
+module.exports = { getMembershipStatus, getMembershipStatusById, transitionMembership };
