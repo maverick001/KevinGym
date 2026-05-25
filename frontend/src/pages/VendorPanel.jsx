@@ -2,14 +2,6 @@ import { useState, useEffect } from 'react';
 import axiosInstance from '../axiosConfig';
 import { useAuth } from '../context/AuthContext';
 
-const PUBLISHED_COURSES = [
-  { course: 'Power Yoga',         schedule: 'Mon / Wed', time: '7:00 AM'  },
-  { course: 'Stretch & Restore',  schedule: 'Tue / Thu', time: '1:00 PM'  },
-  { course: 'Vinyasa Flow',       schedule: 'Wed / Fri', time: '9:00 AM'  },
-  { course: 'Morning Meditation', schedule: 'Daily',     time: '6:30 AM'  },
-  { course: 'Core & Balance',     schedule: 'Mon / Fri', time: '11:00 AM' },
-  { course: 'Hot Yoga Basics',    schedule: 'Sat',       time: '8:00 AM'  },
-];
 
 const INITIAL_NOTIFICATIONS = [
   { datetime: 'Mar 23 · 9:00 AM',  content: 'Power Yoga booking confirmed: Sarah Mitchell' },
@@ -25,12 +17,23 @@ const STUDIOS = ['Happy Yoga Studio', 'Studio A', 'Studio B', 'Spin Room', 'Yoga
 const VendorPanel = () => {
   const { user } = useAuth();
   const [form, setForm] = useState({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
-  const [courses, setCourses] = useState(PUBLISHED_COURSES);
+  const [courses, setCourses] = useState([]);
   const [selected, setSelected] = useState(null);
 
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const [selectedNotif, setSelectedNotif] = useState(null);
   const [flaggedNotifs, setFlaggedNotifs] = useState(new Set());
+
+  useEffect(() => {
+    axiosInstance.get('/api/courses', {
+      headers: { Authorization: `Bearer ${user?.token}` },
+    }).then(res => {
+      const mine = res.data
+        .filter(c => c.vendorId === user?.id)
+        .map(c => ({ _id: c._id, course: c.name, schedule: c.schedule, time: c.time || '—', description: c.description || '', studio: c.studio || '' }));
+      setCourses(mine);
+    }).catch(() => {});
+  }, [user]);
 
   useEffect(() => {
     axiosInstance.get('/api/notifications?target=vendors', {
@@ -48,7 +51,7 @@ const VendorPanel = () => {
   const handleCreate = async () => {
     if (!form.course || !form.date) return;
     try {
-      await axiosInstance.post('/api/courses', {
+      const res = await axiosInstance.post('/api/courses', {
         name: form.course,
         schedule: form.date,
         time: form.time,
@@ -57,18 +60,34 @@ const VendorPanel = () => {
       }, {
         headers: { Authorization: `Bearer ${user?.token}` },
       });
-      setCourses([...courses, { course: form.course, schedule: form.date, time: form.time || '—' }]);
+      const c = res.data;
+      setCourses([...courses, { _id: c._id, course: c.name, schedule: c.schedule, time: c.time || '—', description: c.description || '', studio: c.studio || '' }]);
       setForm({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
     } catch (err) {
       alert(err.response?.data?.message || 'Failed to create course.');
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (selected === null) return;
-    setCourses(courses.map((c, i) => i === selected ? { ...c, course: form.course, schedule: form.date, time: form.time, description: form.description, studio: form.studio } : c));
-    setSelected(null);
-    setForm({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
+    const courseId = courses[selected]._id;
+    try {
+      const res = await axiosInstance.put(`/api/courses/${courseId}`, {
+        name: form.course,
+        schedule: form.date,
+        time: form.time,
+        description: form.description,
+        studio: form.studio,
+      }, {
+        headers: { Authorization: `Bearer ${user?.token}` },
+      });
+      const c = res.data;
+      setCourses(courses.map((item, i) => i === selected ? { _id: c._id, course: c.name, schedule: c.schedule, time: c.time || '—', description: c.description || '', studio: c.studio || '' } : item));
+      setSelected(null);
+      setForm({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to update course.');
+    }
   };
 
   const handleSelectForEdit = (i) => {
@@ -76,11 +95,19 @@ const VendorPanel = () => {
     setForm({ course: courses[i].course, date: courses[i].schedule, time: courses[i].time, description: courses[i].description || '', studio: courses[i].studio || STUDIOS[0] });
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (selected === null || selected === undefined) return;
-    setCourses(courses.filter((_, i) => i !== selected));
-    setSelected(null);
-    setForm({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
+    const courseId = courses[selected]._id;
+    try {
+      await axiosInstance.delete(`/api/courses/${courseId}`, {
+        headers: { Authorization: `Bearer ${user?.token}` },
+      });
+      setCourses(courses.filter((_, i) => i !== selected));
+      setSelected(null);
+      setForm({ course: '', date: '', time: '', description: '', studio: STUDIOS[0] });
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to delete course.');
+    }
   };
 
   const inputClass = 'w-full px-2 py-1.5 border border-gray-300 rounded text-sm text-gray-700 focus:outline-none focus:border-gym-green';

@@ -22,3 +22,4 @@ start_t3medium.tf
 .terraform/
 terraform*
 .terraform*
+script/
