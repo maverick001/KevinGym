@@ -3,6 +3,9 @@ import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
 
 
+const formatDate = (iso) =>
+  new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
 const INITIAL_NOTIFICATIONS = [
   { message: 'New member sign-up: Sarah Mitchell',          date: 'Mar 23' },
   { message: 'Class cancelled: Boxing Basics (Mar 24)',     date: 'Mar 23' },
@@ -255,10 +258,8 @@ const AdminDashboard = () => {
                 <button
                   onClick={() => {
                     if (!notifForm.message.trim()) return;
-                    const today = new Date();
-                    const dateStr = today.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
                     setNotifications([
-                      { message: `[To: ${notifForm.target}] ${notifForm.message.trim()}`, date: dateStr },
+                      { message: `[To: ${notifForm.target}] ${notifForm.message.trim()}`, date: formatDate(new Date()) },
                       ...notifications,
                     ]);
                     setNotifForm({ message: '', target: 'members' });

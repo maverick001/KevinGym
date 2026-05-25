@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -10,6 +11,11 @@ import VendorPanel from './pages/VendorPanel';
 import ClassBookingPanel from './pages/ClassBookingPanel';
 import WorkoutPlanPage from './pages/WorkoutPlanPage';
 
+const PrivateRoute = ({ children }) => {
+  const { user } = useAuth();
+  return user ? children : <Navigate to="/login" replace />;
+};
+
 function App() {
   return (
     <Router>
@@ -17,14 +23,14 @@ function App() {
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/member-panel" element={<MemberPanel />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/vendor-panel" element={<VendorPanel />} />
-        <Route path="/class-booking" element={<ClassBookingPanel />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/tasks" element={<Tasks />} />
-        <Route path="/workout-plan" element={<WorkoutPlanPage />} />
+        <Route path="/member" element={<PrivateRoute><MemberPanel /></PrivateRoute>} />
+        <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
+        <Route path="/vendor" element={<PrivateRoute><VendorPanel /></PrivateRoute>} />
+        <Route path="/class-booking" element={<PrivateRoute><ClassBookingPanel /></PrivateRoute>} />
+        <Route path="/profile" element={<PrivateRoute><Profile /></PrivateRoute>} />
+        <Route path="/tasks" element={<PrivateRoute><Tasks /></PrivateRoute>} />
+        <Route path="/workout-plan" element={<PrivateRoute><WorkoutPlanPage /></PrivateRoute>} />
       </Routes>
     </Router>
   );

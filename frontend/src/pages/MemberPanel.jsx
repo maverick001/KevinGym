@@ -14,13 +14,25 @@ const BOOKED_CLASSES = [
 ];
 
 const INITIAL_NOTIFICATIONS = [
-  { id: 'MSG-001', content: 'Your booking for CLS-101 is confirmed.' },
-  { id: 'MSG-002', content: 'Reminder: Power Yoga tomorrow at 7:00 AM.' },
-  { id: 'MSG-003', content: 'Class CLS-089 location changed to Studio B.' },
-  { id: 'MSG-004', content: 'Monthly membership renewed successfully.' },
-  { id: 'MSG-005', content: 'New class added: Dance Cardio on Mar 29.' },
-  { id: 'MSG-006', content: "Kevin's Gym will be closed on Apr 1 (holiday)." },
+  { datetime: 'Mar 23 · 9:00 AM',  content: 'Your booking for C-001 is confirmed.' },
+  { datetime: 'Mar 23 · 10:30 AM', content: 'Reminder: Power Yoga tomorrow at 7:00 AM.' },
+  { datetime: 'Mar 22 · 2:15 PM',  content: 'Class C-003 location changed to Studio B.' },
+  { datetime: 'Mar 22 · 4:00 PM',  content: 'Monthly membership renewed successfully.' },
+  { datetime: 'Mar 21 · 11:00 AM', content: 'New class added: Dance Cardio on Mar 29.' },
+  { datetime: 'Mar 21 · 3:45 PM',  content: "Kevin's Gym will be closed on Apr 1 (holiday)." },
 ];
+
+const formatDatetime = (iso) => {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+    ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+};
+
+const formatTime = (iso) => {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
+    ' · ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+};
 
 const MemberPanel = () => {
   const { user } = useAuth();
@@ -31,14 +43,20 @@ const MemberPanel = () => {
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const notifications = liveNotifications.length > 0
-    ? liveNotifications.map((n, i) => ({
-        id: `MSG-${String(i + 1).padStart(3, '0')}`,
-        content: n.message,
-      }))
-    : INITIAL_NOTIFICATIONS;
+  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const [selectedNotif, setSelectedNotif] = useState(null);
   const [flaggedNotifs, setFlaggedNotifs] = useState(new Set());
+
+  useEffect(() => {
+    if (liveNotifications.length > 0) {
+      setNotifications(liveNotifications.map((n) => ({
+        datetime: n.createdAt ? formatDatetime(n.createdAt) : '—',
+        content: n.message,
+      })));
+    }
+  }, [liveNotifications]);
+
+  const authHeader = { headers: { Authorization: `Bearer ${user?.token}` } };
 
   useEffect(() => {
     if (!user) return;
@@ -46,8 +64,8 @@ const MemberPanel = () => {
       setLoading(true);
       try {
         const [profileRes, membershipRes] = await Promise.all([
-          axiosInstance.get('/api/auth/profile', { headers: { Authorization: `Bearer ${user.token}` } }),
-          axiosInstance.get('/api/membership/status', { headers: { Authorization: `Bearer ${user.token}` } }),
+          axiosInstance.get('/api/auth/profile', authHeader),
+          axiosInstance.get('/api/membership/status', authHeader),
         ]);
         setProfile({ name: profileRes.data.name, email: profileRes.data.email });
         setMembership(membershipRes.data);
@@ -58,14 +76,12 @@ const MemberPanel = () => {
       }
     };
     fetchData();
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave = async () => {
     setLoading(true);
     try {
-      await axiosInstance.put('/api/auth/profile', profile, {
-        headers: { Authorization: `Bearer ${user.token}` },
-      });
+      await axiosInstance.put('/api/auth/profile', profile, authHeader);
       setEditing(false);
     } catch {
       alert('Failed to update profile.');
@@ -224,7 +240,7 @@ const MemberPanel = () => {
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200">
-                <th className="text-left px-4 py-2 font-semibold text-gray-700">Message ID</th>
+                <th className="text-left px-4 py-2 font-semibold text-gray-700">Date/Time</th>
                 <th className="text-left px-4 py-2 font-semibold text-gray-700">Content</th>
               </tr>
             </thead>
@@ -234,8 +250,8 @@ const MemberPanel = () => {
                 const isFlagged = flaggedNotifs.has(i);
                 const rowClass = isSelected ? 'bg-blue-50' : isFlagged ? 'bg-yellow-50' : i % 2 === 1 ? 'bg-gray-50' : '';
                 return (
-                  <tr key={msg.id} onClick={() => setSelectedNotif(i)} className={`cursor-pointer ${rowClass} hover:bg-blue-50`}>
-                    <td className={`px-4 py-2 whitespace-nowrap ${isFlagged ? 'font-medium text-yellow-800' : 'text-gray-600'}`}>{msg.id}</td>
+                  <tr key={i} onClick={() => setSelectedNotif(i)} className={`cursor-pointer ${rowClass} hover:bg-blue-50`}>
+                    <td className={`px-4 py-2 whitespace-nowrap ${isFlagged ? 'font-medium text-yellow-800' : 'text-gray-600'}`}>{msg.datetime}</td>
                     <td className={`px-4 py-2 ${isFlagged ? 'font-medium text-yellow-800' : 'text-gray-600'}`}>{msg.content}</td>
                   </tr>
                 );
@@ -264,6 +280,7 @@ const MemberPanel = () => {
                   prev.forEach(idx => { if (idx < selectedNotif) next.add(idx); else if (idx > selectedNotif) next.add(idx - 1); });
                   return next;
                 });
+                setNotifications(prev => prev.filter((_, i) => i !== selectedNotif));
                 setSelectedNotif(null);
               }}
               className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50"
