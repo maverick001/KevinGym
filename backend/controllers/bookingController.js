@@ -24,17 +24,21 @@ const getMyBookings = async (req, res) => {
 const createBooking = async (req, res) => {
   const { gymClassId } = req.body;
   try {
-    const gymClass = await GymClass.findById(gymClassId);
-    if (!gymClass) return res.status(404).json({ message: 'Class not found' });
-    if (gymClass.enrolled >= gymClass.capacity)
-      return res.status(400).json({ message: 'Class is full' });
-
     const existing = await Booking.findOne({ member: req.user._id, gymClass: gymClassId, status: 'active' });
     if (existing) return res.status(400).json({ message: 'Already booked this class' });
 
+    const gymClass = await GymClass.findOneAndUpdate(
+      { _id: gymClassId, $expr: { $lt: ['$enrolled', '$capacity'] } },
+      { $inc: { enrolled: 1 } },
+      { new: true }
+    );
+    if (!gymClass) {
+      const exists = await GymClass.findById(gymClassId);
+      if (!exists) return res.status(404).json({ message: 'Class not found' });
+      return res.status(400).json({ message: 'Class is full' });
+    }
+
     const booking = await Booking.create({ member: req.user._id, gymClass: gymClassId });
-    gymClass.enrolled += 1;
-    await gymClass.save();
 
     await booking.populate('gymClass');
     res.status(201).json({
@@ -72,17 +76,21 @@ const rescheduleBooking = async (req, res) => {
     const booking = await Booking.findOne({ _id: req.params.id, member: req.user._id, status: 'active' });
     if (!booking) return res.status(404).json({ message: 'Booking not found' });
 
-    const newClass = await GymClass.findById(newGymClassId);
-    if (!newClass) return res.status(404).json({ message: 'New class not found' });
-    if (newClass.enrolled >= newClass.capacity)
-      return res.status(400).json({ message: 'New class is full' });
-
     const alreadyBooked = await Booking.findOne({ member: req.user._id, gymClass: newGymClassId, status: 'active' });
     if (alreadyBooked) return res.status(400).json({ message: 'Already booked this class' });
 
+    const newClass = await GymClass.findOneAndUpdate(
+      { _id: newGymClassId, $expr: { $lt: ['$enrolled', '$capacity'] } },
+      { $inc: { enrolled: 1 } },
+      { new: true }
+    );
+    if (!newClass) {
+      const exists = await GymClass.findById(newGymClassId);
+      if (!exists) return res.status(404).json({ message: 'New class not found' });
+      return res.status(400).json({ message: 'New class is full' });
+    }
+
     await GymClass.findByIdAndUpdate(booking.gymClass, { $inc: { enrolled: -1 } });
-    newClass.enrolled += 1;
-    await newClass.save();
 
     booking.gymClass = newGymClassId;
     await booking.save();
