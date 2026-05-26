@@ -40,7 +40,7 @@ jobs:
         run: |
           cd ~/kevingym
           git fetch origin
-          git reset --hard origin/${{ github.ref_name }}
+          git reset --hard origin/main
           npm run install-all
           npm run build --prefix frontend
           pm2 restart kevingym

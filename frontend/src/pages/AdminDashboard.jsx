@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import axiosInstance from '../axiosConfig';
 
+
 const formatDate = (iso) =>
   new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
@@ -12,8 +13,10 @@ const AdminDashboard = () => {
   const authHeader = { headers: { Authorization: `Bearer ${user?.token}` } };
 
   const [users, setUsers] = useState([]);
-  const [selected, setSelected] = useState(null); // user being edited
+  const [selected, setSelected] = useState(null);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', role: 'member' });
+  const [membershipTransition, setMembershipTransition] = useState('');
+  const [allowedTransitions, setAllowedTransitions] = useState([]);
 
   const [notifications, setNotifications] = useState([]);
   const [showNotifForm, setShowNotifForm] = useState(false);
@@ -29,8 +32,6 @@ const AdminDashboard = () => {
     }
   };
 
-  useEffect(() => { if (user) fetchUsers(); }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
-
   const fetchNotifications = async () => {
     try {
       const res = await axiosInstance.get('/api/notifications', authHeader);
@@ -40,6 +41,7 @@ const AdminDashboard = () => {
     }
   };
 
+  useEffect(() => { if (user) fetchUsers(); }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (user) fetchNotifications(); }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreate = async () => {
@@ -57,18 +59,38 @@ const AdminDashboard = () => {
     try {
       const name = `${form.firstName} ${form.lastName}`.trim();
       const res = await axiosInstance.put(`/api/admin/users/${selected._id}`, { name, email: form.email, role: form.role }, authHeader);
-      setUsers(users.map(u => u._id === selected._id ? { ...u, ...res.data } : u));
+      let updatedUser = { ...res.data };
+
+      if (membershipTransition) {
+        const mRes = await axiosInstance.put(
+          `/api/membership/${selected._id}/transition`,
+          { newStatus: membershipTransition },
+          authHeader
+        );
+        updatedUser.membershipStatus = mRes.data.status;
+      }
+
+      setUsers(users.map(u => u._id === selected._id ? { ...u, ...updatedUser } : u));
       setSelected(null);
       setForm({ firstName: '', lastName: '', email: '', role: 'member' });
+      setMembershipTransition('');
+      setAllowedTransitions([]);
     } catch {
       alert('Failed to update user.');
     }
   };
 
-  const handleSelectForEdit = (u) => {
+  const handleSelectForEdit = async (u) => {
     const [firstName, ...rest] = (u.name || '').split(' ');
     setSelected(u);
     setForm({ firstName, lastName: rest.join(' '), email: u.email, role: u.role });
+    setMembershipTransition('');
+    try {
+      const res = await axiosInstance.get(`/api/membership/${u._id}/status`, authHeader);
+      setAllowedTransitions(res.data.allowedTransitions);
+    } catch {
+      setAllowedTransitions([]);
+    }
   };
 
   const handleDelete = async (id) => {
@@ -89,6 +111,7 @@ const AdminDashboard = () => {
       {/* Hero */}
       <div className="px-8 py-5 border-b border-gray-200">
         <h1 className="text-2xl font-semibold text-gray-800">Administrator Panel</h1>
+        <p className="text-sm text-gray-500 mt-1">Manage users, view existing members, and send system notifications.</p>
       </div>
 
       {/* Three-column layout */}
@@ -130,6 +153,18 @@ const AdminDashboard = () => {
               <option value="vendor">Vendor</option>
               <option value="admin">Admin</option>
             </select>
+            {selected && (
+              <select
+                value={membershipTransition}
+                onChange={(e) => setMembershipTransition(e.target.value)}
+                className={inputClass}
+              >
+                <option value="">Membership: {selected.membershipStatus || 'trial'} (no change)</option>
+                {allowedTransitions.map(s => (
+                  <option key={s} value={s}>Transition → {s}</option>
+                ))}
+              </select>
+            )}
             <div className="flex gap-2 pt-1">
               <button
                 onClick={handleCreate}
@@ -139,7 +174,8 @@ const AdminDashboard = () => {
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
+                disabled={!selected}
+                className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Save
               </button>
@@ -156,6 +192,7 @@ const AdminDashboard = () => {
                 <th className="text-left px-4 py-2 font-semibold text-gray-700">Name</th>
                 <th className="text-left px-4 py-2 font-semibold text-gray-700">Email</th>
                 <th className="text-left px-4 py-2 font-semibold text-gray-700">Role</th>
+                <th className="text-left px-4 py-2 font-semibold text-gray-700">Membership</th>
               </tr>
             </thead>
             <tbody>
@@ -163,11 +200,19 @@ const AdminDashboard = () => {
                 <tr
                   key={u._id}
                   onClick={() => handleSelectForEdit(u)}
-                  className={`cursor-pointer ${selected?._id === u._id ? 'bg-orange-100' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-orange-50`}
+                  className={`cursor-pointer ${selected?._id === u._id ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-green-50`}
                 >
                   <td className="px-4 py-2 text-gray-600">{u.name}</td>
                   <td className="px-4 py-2 text-gray-600">{u.email}</td>
                   <td className="px-4 py-2 text-gray-600">{ROLE_LABELS[u.role] ?? u.role}</td>
+                  <td className="px-4 py-2">
+                    <span className={`px-1.5 py-0.5 rounded text-xs font-semibold uppercase ${
+                      u.membershipStatus === 'active'    ? 'bg-green-100 text-green-700' :
+                      u.membershipStatus === 'trial'     ? 'bg-blue-100 text-blue-700'  :
+                      u.membershipStatus === 'suspended' ? 'bg-yellow-100 text-yellow-700' :
+                                                           'bg-red-100 text-red-700'
+                    }`}>{u.membershipStatus || 'trial'}</span>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -228,7 +273,7 @@ const AdminDashboard = () => {
                   }}
                   className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
                 >
-                  Send
+                  Submit
                 </button>
                 <button
                   onClick={() => { setShowNotifForm(false); setNotifForm({ message: '', target: 'members' }); }}
@@ -251,7 +296,7 @@ const AdminDashboard = () => {
                   <tr
                     key={n._id}
                     onClick={() => setSelectedNotif(n._id === selectedNotif ? null : n._id)}
-                    className={`cursor-pointer ${selectedNotif === n._id ? 'bg-orange-100' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-orange-50`}
+                    className={`cursor-pointer ${selectedNotif === n._id ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-green-50`}
                   >
                     <td className="px-4 py-2 text-gray-600">{n.message}</td>
                     <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{formatDate(n.createdAt)}</td>
@@ -280,7 +325,8 @@ const AdminDashboard = () => {
                     alert('Failed to delete notification.');
                   }
                 }}
-                className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50"
+                disabled={!selectedNotif}
+                className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Delete
               </button>

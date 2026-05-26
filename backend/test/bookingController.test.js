@@ -83,7 +83,7 @@ describe('Create Booking Function Test', () => {
 
   it('TC-033: Should create a booking successfully', async () => {
     // Simulate available class capacity with no existing active booking
-    const gymClass = { ...gymClassData, save: sinon.stub().resolves() };
+    const gymClass = { ...gymClassData, enrolled: 6 };
     const populatedBooking = {
       _id: 'b001',
       gymClass: gymClassData,
@@ -91,8 +91,8 @@ describe('Create Booking Function Test', () => {
     };
     populatedBooking.populate = sinon.stub().resolves(populatedBooking);
 
-    sinon.stub(GymClass, 'findById').resolves(gymClass);
     sinon.stub(Booking, 'findOne').resolves(null);
+    sinon.stub(GymClass, 'findOneAndUpdate').resolves(gymClass);
     sinon.stub(Booking, 'create').resolves(populatedBooking);
 
     const req = { user: { _id: 'member001' }, body: { gymClassId: 'gc001' } };
@@ -106,6 +106,8 @@ describe('Create Booking Function Test', () => {
   });
 
   it('TC-034: Should return 404 if class is not found', async () => {
+    sinon.stub(Booking, 'findOne').resolves(null);
+    sinon.stub(GymClass, 'findOneAndUpdate').resolves(null);
     sinon.stub(GymClass, 'findById').resolves(null);
 
     const req = { user: { _id: 'member001' }, body: { gymClassId: 'missing' } };
@@ -118,7 +120,9 @@ describe('Create Booking Function Test', () => {
   });
 
   it('TC-035: Should return 400 if class is full', async () => {
-    // Simulate class at full capacity
+    // Simulate atomic update fails (class full) but class exists
+    sinon.stub(Booking, 'findOne').resolves(null);
+    sinon.stub(GymClass, 'findOneAndUpdate').resolves(null);
     sinon.stub(GymClass, 'findById').resolves({
       ...gymClassData,
       enrolled: 20,
@@ -149,7 +153,7 @@ describe('Create Booking Function Test', () => {
   });
 
   it('TC-037: Should return 500 if a database error occurs', async () => {
-    sinon.stub(GymClass, 'findById').rejects(new Error('Database connection failed'));
+    sinon.stub(Booking, 'findOne').rejects(new Error('Database connection failed'));
 
     const req = { user: { _id: 'member001' }, body: { gymClassId: 'gc001' } };
     const res = createMockRes();
@@ -254,7 +258,7 @@ describe('Reschedule Booking Function Test', () => {
     sinon.stub(Booking, 'findOne')
       .onFirstCall().resolves(booking)
       .onSecondCall().resolves(null);
-    sinon.stub(GymClass, 'findById').resolves(newClass);
+    sinon.stub(GymClass, 'findOneAndUpdate').resolves(newClass);
     sinon.stub(GymClass, 'findByIdAndUpdate').resolves();
 
     const req = {
@@ -288,10 +292,10 @@ describe('Reschedule Booking Function Test', () => {
   });
 
   it('TC-044: Should return 404 if new class is not found', async () => {
-    sinon.stub(Booking, 'findOne').resolves({
-      _id: 'b001',
-      gymClass: 'gc001',
-    });
+    sinon.stub(Booking, 'findOne')
+      .onFirstCall().resolves({ _id: 'b001', gymClass: 'gc001' })
+      .onSecondCall().resolves(null);
+    sinon.stub(GymClass, 'findOneAndUpdate').resolves(null);
     sinon.stub(GymClass, 'findById').resolves(null);
 
     const req = {
@@ -331,7 +335,10 @@ describe('Reschedule Booking Function Test', () => {
   });
 
   it('TC-046: Should return 400 if new class is full', async () => {
-    sinon.stub(Booking, 'findOne').resolves({ _id: 'b001', gymClass: 'gc001' });
+    sinon.stub(Booking, 'findOne')
+      .onFirstCall().resolves({ _id: 'b001', gymClass: 'gc001' })
+      .onSecondCall().resolves(null);
+    sinon.stub(GymClass, 'findOneAndUpdate').resolves(null);
     sinon.stub(GymClass, 'findById').resolves({
       ...gymClassData,
       _id: 'gc002',
