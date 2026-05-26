@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - development/kevinbai
   pull_request:
     branches:
       - main
@@ -34,6 +35,8 @@ jobs:
 
     steps:
       - name: Deploy
+        env:
+          CI: false
         run: |
           cd ~/kevingym
           git fetch origin
