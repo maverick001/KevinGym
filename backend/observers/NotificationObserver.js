@@ -19,7 +19,7 @@ class NotificationObserver {
       Notification.create({ message: `New course available: ${name}`, target: 'members' })
     );
     gymEvents.on('membershipTransitioned', ({ name, from, to }) =>
-      Notification.create({ message: `Membership updated for ${name}: ${from} → ${to}`, target: 'admin' })
+      Notification.create({ message: `Membership updated for ${name}: ${from} → ${to}`, target: 'all' })
     );
     gymEvents.on('planCreated', ({ title, memberName }) =>
       Notification.create({ message: `Workout plan "${title}" assigned to ${memberName}`, target: 'all' })

@@ -6,17 +6,6 @@ import axiosInstance from '../axiosConfig';
 const formatDate = (iso) =>
   new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
-const INITIAL_NOTIFICATIONS = [
-  { message: 'New member sign-up: Sarah Mitchell',          date: 'Mar 23' },
-  { message: 'Class cancelled: Boxing Basics (Mar 24)',     date: 'Mar 23' },
-  { message: 'Vendor request: Priya Nair — Happy Yoga Studio', date: 'Mar 22' },
-  { message: 'Payment overdue: James Thornton',             date: 'Mar 22' },
-  { message: 'System maintenance scheduled: Mar 30, 2am–4am', date: 'Mar 21' },
-  { message: 'New class added: Dance Cardio (Mar 29)',      date: 'Mar 21' },
-  { message: 'Member feedback received: Daniel Osei',       date: 'Mar 20' },
-  { message: 'Monthly report ready for download',           date: 'Mar 20' },
-];
-
 const ROLE_LABELS = { member: 'Member', admin: 'Admin', vendor: 'Vendor' };
 
 const AdminDashboard = () => {
@@ -29,9 +18,10 @@ const AdminDashboard = () => {
   const [membershipTransition, setMembershipTransition] = useState('');
   const [allowedTransitions, setAllowedTransitions] = useState([]);
 
-  const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState([]);
   const [showNotifForm, setShowNotifForm] = useState(false);
   const [notifForm, setNotifForm] = useState({ message: '', target: 'members' });
+  const [selectedNotif, setSelectedNotif] = useState(null);
 
   const fetchUsers = async () => {
     try {
@@ -42,7 +32,17 @@ const AdminDashboard = () => {
     }
   };
 
+  const fetchNotifications = async () => {
+    try {
+      const res = await axiosInstance.get('/api/notifications', authHeader);
+      setNotifications(res.data);
+    } catch {
+      alert('Failed to load notifications.');
+    }
+  };
+
   useEffect(() => { if (user) fetchUsers(); }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (user) fetchNotifications(); }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleCreate = async () => {
     try {
@@ -257,14 +257,19 @@ const AdminDashboard = () => {
               </select>
               <div className="flex gap-2 pt-1">
                 <button
-                  onClick={() => {
+                  onClick={async () => {
                     if (!notifForm.message.trim()) return;
-                    setNotifications([
-                      { message: `[To: ${notifForm.target}] ${notifForm.message.trim()}`, date: formatDate(new Date()) },
-                      ...notifications,
-                    ]);
-                    setNotifForm({ message: '', target: 'members' });
-                    setShowNotifForm(false);
+                    try {
+                      const res = await axiosInstance.post('/api/notifications', {
+                        message: `[To: ${notifForm.target}] ${notifForm.message.trim()}`,
+                        target: notifForm.target,
+                      }, authHeader);
+                      setNotifications([res.data, ...notifications]);
+                      setNotifForm({ message: '', target: 'members' });
+                      setShowNotifForm(false);
+                    } catch {
+                      alert('Failed to send notification.');
+                    }
                   }}
                   className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
                 >
@@ -288,9 +293,13 @@ const AdminDashboard = () => {
               </thead>
               <tbody>
                 {notifications.map((n, i) => (
-                  <tr key={i} className={i % 2 === 1 ? 'bg-gray-50' : ''}>
+                  <tr
+                    key={n._id}
+                    onClick={() => setSelectedNotif(n._id === selectedNotif ? null : n._id)}
+                    className={`cursor-pointer ${selectedNotif === n._id ? 'bg-green-50' : i % 2 === 1 ? 'bg-gray-50' : ''} hover:bg-green-50`}
+                  >
                     <td className="px-4 py-2 text-gray-600">{n.message}</td>
-                    <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{n.date}</td>
+                    <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{formatDate(n.createdAt)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -305,7 +314,22 @@ const AdminDashboard = () => {
               >
                 Create
               </button>
-              <button className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50">Send</button>
+              <button
+                onClick={async () => {
+                  if (!selectedNotif) return;
+                  try {
+                    await axiosInstance.delete(`/api/notifications/${selectedNotif}`, authHeader);
+                    setNotifications(notifications.filter(n => n._id !== selectedNotif));
+                    setSelectedNotif(null);
+                  } catch {
+                    alert('Failed to delete notification.');
+                  }
+                }}
+                disabled={!selectedNotif}
+                className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Delete
+              </button>
             </div>
           )}
         </div>
