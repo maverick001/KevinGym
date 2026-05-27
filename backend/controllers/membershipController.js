@@ -1,70 +1,34 @@
-﻿const User = require('../models/User');
-const MembershipContext = require('../membership/MembershipContext');
-const gymEvents = require('../events/gymEvents');
+const User = require('../models/User');
+const MembershipContext = require('../states/MembershipContext');
 
-const getMembershipStatus = async (req, res) => {
+const getMembers = async (req, res) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    const ctx = new MembershipContext(user.membershipStatus);
-    res.json({
-      status:             ctx.getName(),
-      description:        ctx.getDescription(),
-      canBookClass:       ctx.canBookClass(),
-      canAccessContent:   ctx.canAccessContent(),
-      allowedTransitions: ctx.allowedTransitions(),
-    });
+    const members = await User.find({ role: { $in: ['member', 'vendor'] } }).select('name email membershipStatus');
+    res.json(members);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-const getMembershipStatusById = async (req, res) => {
+const updateMembership = async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    const ctx = new MembershipContext(user.membershipStatus);
-    res.json({
-      status:             ctx.getName(),
-      allowedTransitions: ctx.allowedTransitions(),
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-const transitionMembership = async (req, res) => {
-  const { userId } = req.params;
-  const { newStatus } = req.body;
-  try {
-    const user = await User.findById(userId);
+    const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const ctx = new MembershipContext(user.membershipStatus);
-    const previousStatus = ctx.getName();
-    ctx.transitionTo(newStatus);
+    const { membershipStatus } = req.body;
+    const ctx = new MembershipContext(user.membershipStatus || 'Trial');
+    ctx.transitionTo(membershipStatus);
 
     user.membershipStatus = ctx.getName();
     await user.save();
 
-    gymEvents.emit('membershipTransitioned', {
-      name:  user.name,
-      email: user.email,
-      from:  previousStatus,
-      to:    ctx.getName(),
-    });
-
-    res.json({
-      userId:           user._id,
-      status:           ctx.getName(),
-      description:      ctx.getDescription(),
-      canBookClass:     ctx.canBookClass(),
-      canAccessContent: ctx.canAccessContent(),
-    });
+    res.json({ id: user._id, name: user.name, membershipStatus: user.membershipStatus });
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    if (error.message.startsWith('Cannot transition')) {
+      return res.status(400).json({ message: error.message });
+    }
+    res.status(500).json({ message: error.message });
   }
 };
 
-module.exports = { getMembershipStatus, getMembershipStatusById, transitionMembership };
+module.exports = { getMembers, updateMembership };

@@ -50,6 +50,41 @@ describe('Get Notifications Function Test', () => {
     sinon.assert.calledWith(Notification.find, { source: 'admin' });
   });
 
+  it('TC-054b: Admins see all notifications (no source filter)', async () => {
+    const notifications = [
+      { id: 'n001', message: 'Gym closed tomorrow', target: 'all', source: 'admin' },
+      { id: 'n002', message: 'User profile updated: Kevin', target: 'all', source: 'system' },
+    ];
+    sinon.stub(Notification, 'find').returns({
+      sort: sinon.stub().resolves(notifications),
+    });
+
+    const req = { query: {}, user: { role: 'admin' } };
+    const res = createMockRes();
+
+    await getNotifications(req, res);
+
+    assert.strictEqual(res.statusCode, 200);
+    assert.strictEqual(res.body.length, 2);
+    sinon.assert.calledWith(Notification.find, {});
+  });
+
+  it('TC-054c: Members see admin announcements and notifications addressed to them', async () => {
+    sinon.stub(Notification, 'find').returns({
+      sort: sinon.stub().resolves([]),
+    });
+
+    const req = { query: {}, user: { role: 'member', id: 'user-42' } };
+    const res = createMockRes();
+
+    await getNotifications(req, res);
+
+    assert.strictEqual(res.statusCode, 200);
+    sinon.assert.calledWith(Notification.find, {
+      $or: [{ source: 'admin' }, { recipientId: 'user-42' }],
+    });
+  });
+
   it('TC-055: Should return 500 if a database error occurs', async () => {
     sinon.stub(Notification, 'find').throws(new Error('Database connection failed'));
 
@@ -82,8 +117,8 @@ describe('Get Notifications Function Test', () => {
     assert.strictEqual(res.statusCode, 200);
     assert.strictEqual(res.body[0].target, 'members');
     sinon.assert.calledWith(Notification.find, {
-      source: 'admin',
       target: { $in: ['members', 'all'] },
+      source: 'admin',
     });
   });
 });

@@ -25,7 +25,7 @@ const createWorkoutPlan = async (req, res) => {
       assignedBy: req.user.id,
     });
 
-    gymEvents.emit('planCreated', { title: plan.title, memberName: member.name });
+    gymEvents.emit('planCreated', { title: plan.title, memberId: member._id });
     res.status(201).json(plan);
   } catch (error) {
     res.status(400).json({ message: error.message });

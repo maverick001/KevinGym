@@ -10,6 +10,7 @@ const Profile = () => {
     university: '',
     address: '',
   });
+  const [membershipStatus, setMembershipStatus] = useState('Trial');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -26,6 +27,7 @@ const Profile = () => {
           university: response.data.university || '',
           address: response.data.address || '',
         });
+        setMembershipStatus(response.data.membershipStatus || 'Trial');
       } catch (error) {
         alert('Failed to fetch profile. Please try again.');
       } finally {
@@ -59,6 +61,15 @@ const Profile = () => {
     <div className="max-w-md mx-auto mt-20">
       <form onSubmit={handleSubmit} className="bg-white p-6 shadow-md rounded">
         <h1 className="text-2xl font-bold mb-4 text-center">Your Profile</h1>
+        <div className="flex justify-center mb-4">
+          <span className={`px-4 py-1 rounded-full text-sm font-semibold ${
+            membershipStatus === 'Active' ? 'bg-green-100 text-green-700' :
+            membershipStatus === 'Expired' ? 'bg-red-100 text-red-600' :
+            'bg-yellow-100 text-yellow-700'
+          }`}>
+            {membershipStatus} Member
+          </span>
+        </div>
         <input
           type="text"
           placeholder="Name"

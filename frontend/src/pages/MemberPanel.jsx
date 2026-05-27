@@ -14,6 +14,12 @@ const INITIAL_NOTIFICATIONS = [
   { datetime: 'Mar 21 · 3:45 PM',  content: "Kevin's Gym will be closed on Apr 1 (holiday)." },
 ];
 
+const MEMBERSHIP_DESCRIPTIONS = {
+  Trial:   'Trial membership — browse content only, cannot book classes.',
+  Active:  'Active membership — full access to classes and content.',
+  Expired: 'Expired membership — please renew to regain access.',
+};
+
 const formatDatetime = (iso) => {
   const d = new Date(iso);
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) +
@@ -31,7 +37,7 @@ const MemberPanel = () => {
   const { notifications: liveNotifications } = useNotifications();
   const navigate = useNavigate();
   const [profile, setProfile] = useState({ name: user?.name || '', email: user?.email || '' });
-  const [membership, setMembership] = useState({ status: 'trial', description: '', canBookClass: true, canAccessContent: true });
+  const [membershipStatus, setMembershipStatus] = useState('Trial');
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -42,6 +48,9 @@ const MemberPanel = () => {
   const [notifications, setNotifications] = useState(INITIAL_NOTIFICATIONS);
   const [selectedNotif, setSelectedNotif] = useState(null);
   const [flaggedNotifs, setFlaggedNotifs] = useState(new Set());
+
+  const canBookClass = membershipStatus === 'Active';
+  const membershipDescription = MEMBERSHIP_DESCRIPTIONS[membershipStatus] || '';
 
   useEffect(() => {
     if (liveNotifications.length > 0) {
@@ -56,22 +65,19 @@ const MemberPanel = () => {
 
   useEffect(() => {
     if (!user) return;
-    const fetchData = async () => {
+    const fetchProfile = async () => {
       setLoading(true);
       try {
-        const [profileRes, membershipRes] = await Promise.all([
-          axiosInstance.get('/api/auth/profile', authHeader),
-          axiosInstance.get('/api/membership/status', authHeader),
-        ]);
-        setProfile({ name: profileRes.data.name, email: profileRes.data.email });
-        setMembership(membershipRes.data);
+        const res = await axiosInstance.get('/api/auth/profile', authHeader);
+        setProfile({ name: res.data.name, email: res.data.email });
+        setMembershipStatus(res.data.membershipStatus || 'Trial');
       } catch {
         alert('Failed to fetch profile.');
       } finally {
         setLoading(false);
       }
     };
-    fetchData();
+    fetchProfile();
   }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -87,7 +93,7 @@ const MemberPanel = () => {
       }
     };
     if (user) fetchBookings();
-  }, [user]);
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave = async () => {
     setLoading(true);
@@ -187,12 +193,11 @@ const MemberPanel = () => {
               <span className={labelClass}>Membership</span>
               <div className="flex-1 flex items-center gap-2">
                 <span className={`px-2 py-0.5 rounded text-xs font-semibold uppercase tracking-wide ${
-                  membership.status === 'active'    ? 'bg-green-100 text-green-700' :
-                  membership.status === 'trial'     ? 'bg-blue-100 text-blue-700'  :
-                  membership.status === 'suspended' ? 'bg-yellow-100 text-yellow-700' :
-                                                      'bg-red-100 text-red-700'
-                }`}>{membership.status}</span>
-                <span className="text-xs text-gray-500">{membership.description}</span>
+                  membershipStatus === 'Active'  ? 'bg-green-100 text-green-700' :
+                  membershipStatus === 'Expired' ? 'bg-red-100 text-red-700'     :
+                                                   'bg-yellow-100 text-yellow-700'
+                }`}>{membershipStatus}</span>
+                <span className="text-xs text-gray-500">{membershipDescription}</span>
               </div>
             </div>
             <div className="flex gap-2 pt-2">
@@ -244,7 +249,7 @@ const MemberPanel = () => {
                   </tr>
                 ))}
                 {bookings.length === 0 && (
-                  <tr><td colSpan={3} className="px-4 py-4 text-center text-gray-400 text-sm">No bookings yet</td></tr>
+                  <tr><td colSpan={4} className="px-4 py-4 text-center text-gray-400 text-sm">No bookings yet</td></tr>
                 )}
               </tbody>
             </table>
@@ -264,8 +269,8 @@ const MemberPanel = () => {
             </button>
             <button
               onClick={() => navigate('/class-booking')}
-              disabled={!membership.canBookClass}
-              title={!membership.canBookClass ? membership.description : ''}
+              disabled={!canBookClass}
+              title={!canBookClass ? membershipDescription : ''}
               className="px-4 py-1.5 border border-green-500 rounded text-sm text-green-600 hover:bg-green-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Browse New Class
@@ -343,6 +348,26 @@ const MemberPanel = () => {
         </div>
 
       </div>
+
+      {/* Membership Type */}
+      <div className="px-8 pb-8">
+        <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
+          <div className="bg-gray-100 border-b border-gray-300 px-4 py-2 text-sm font-medium text-gray-700">
+            Membership Type
+          </div>
+          <div className="p-6 flex items-center gap-4">
+            <span className={`px-5 py-2 rounded-full text-sm font-semibold ${
+              membershipStatus === 'Active'  ? 'bg-green-100 text-green-700' :
+              membershipStatus === 'Expired' ? 'bg-red-100 text-red-600'     :
+                                               'bg-yellow-100 text-yellow-700'
+            }`}>
+              {membershipStatus}
+            </span>
+            <p className="text-sm text-gray-500">{membershipDescription}</p>
+          </div>
+        </div>
+      </div>
+
     </div>
   );
 };

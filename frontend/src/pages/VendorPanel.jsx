@@ -203,7 +203,8 @@ const VendorPanel = () => {
               </button>
               <button
                 onClick={handleSave}
-                className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
+                disabled={selected === null}
+                className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 Save
               </button>
@@ -239,13 +240,15 @@ const VendorPanel = () => {
           <div className="flex gap-2 p-4 border-t border-gray-200">
             <button
               onClick={() => selected !== null && handleSelectForEdit(selected)}
-              className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50"
+              disabled={selected === null}
+              className="px-4 py-1.5 border border-gray-400 rounded text-sm text-gray-700 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Edit
             </button>
             <button
               onClick={handleDelete}
-              className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50"
+              disabled={selected === null}
+              className="px-4 py-1.5 border border-red-400 rounded text-sm text-red-500 hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               Delete
             </button>
@@ -314,6 +317,7 @@ const VendorPanel = () => {
         </div>
 
       </div>
+
       {/* Workout Plan Builder */}
       <div className="px-8 pb-8">
         <div className="bg-white border border-gray-300 rounded-lg overflow-hidden">
@@ -375,20 +379,6 @@ const VendorPanel = () => {
                     value={ex.name}
                     onChange={e => updateExercise(i, 'name', e.target.value)}
                     className="flex-1 px-2 py-1.5 border border-gray-300 rounded text-sm text-gray-700 focus:outline-none focus:border-gym-green"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Sets"
-                    value={ex.sets}
-                    onChange={e => updateExercise(i, 'sets', parseInt(e.target.value, 10))}
-                    className="w-14 px-2 py-1.5 border border-gray-300 rounded text-sm text-gray-700 focus:outline-none focus:border-gym-green"
-                  />
-                  <input
-                    type="text"
-                    placeholder="Reps"
-                    value={ex.reps}
-                    onChange={e => updateExercise(i, 'reps', e.target.value)}
-                    className="w-16 px-2 py-1.5 border border-gray-300 rounded text-sm text-gray-700 focus:outline-none focus:border-gym-green"
                   />
                   <button
                     onClick={() => setExercises(prev => prev.filter((_, idx) => idx !== i))}

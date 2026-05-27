@@ -52,6 +52,7 @@ const getProfile = async (req, res) => {
         role: user.role,
         university: user.university,
         address: user.address,
+        membershipStatus: user.membershipStatus || 'Iron',
       });
     } catch (error) {
       res.status(500).json({ message: 'Server error', error: error.message });

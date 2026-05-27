@@ -15,8 +15,7 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [selected, setSelected] = useState(null);
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '', role: 'member' });
-  const [membershipTransition, setMembershipTransition] = useState('');
-  const [allowedTransitions, setAllowedTransitions] = useState([]);
+  const [newMembershipStatus, setNewMembershipStatus] = useState('');
 
   const [notifications, setNotifications] = useState([]);
   const [showNotifForm, setShowNotifForm] = useState(false);
@@ -61,36 +60,29 @@ const AdminDashboard = () => {
       const res = await axiosInstance.put(`/api/admin/users/${selected._id}`, { name, email: form.email, role: form.role }, authHeader);
       let updatedUser = { ...res.data };
 
-      if (membershipTransition) {
+      if (newMembershipStatus && newMembershipStatus !== (selected.membershipStatus || 'Trial')) {
         const mRes = await axiosInstance.put(
-          `/api/membership/${selected._id}/transition`,
-          { newStatus: membershipTransition },
+          `/api/membership/${selected._id}`,
+          { membershipStatus: newMembershipStatus },
           authHeader
         );
-        updatedUser.membershipStatus = mRes.data.status;
+        updatedUser.membershipStatus = mRes.data.membershipStatus;
       }
 
       setUsers(users.map(u => u._id === selected._id ? { ...u, ...updatedUser } : u));
       setSelected(null);
       setForm({ firstName: '', lastName: '', email: '', role: 'member' });
-      setMembershipTransition('');
-      setAllowedTransitions([]);
-    } catch {
-      alert('Failed to update user.');
+      setNewMembershipStatus('');
+    } catch (e) {
+      alert(e.response?.data?.message || 'Failed to update user.');
     }
   };
 
-  const handleSelectForEdit = async (u) => {
+  const handleSelectForEdit = (u) => {
     const [firstName, ...rest] = (u.name || '').split(' ');
     setSelected(u);
     setForm({ firstName, lastName: rest.join(' '), email: u.email, role: u.role });
-    setMembershipTransition('');
-    try {
-      const res = await axiosInstance.get(`/api/membership/${u._id}/status`, authHeader);
-      setAllowedTransitions(res.data.allowedTransitions);
-    } catch {
-      setAllowedTransitions([]);
-    }
+    setNewMembershipStatus(u.membershipStatus || 'Trial');
   };
 
   const handleDelete = async (id) => {
@@ -155,14 +147,13 @@ const AdminDashboard = () => {
             </select>
             {selected && (
               <select
-                value={membershipTransition}
-                onChange={(e) => setMembershipTransition(e.target.value)}
+                value={newMembershipStatus}
+                onChange={(e) => setNewMembershipStatus(e.target.value)}
                 className={inputClass}
               >
-                <option value="">Membership: {selected.membershipStatus || 'trial'} (no change)</option>
-                {allowedTransitions.map(s => (
-                  <option key={s} value={s}>Transition → {s}</option>
-                ))}
+                <option value="Trial">Membership: Trial</option>
+                <option value="Active">Membership: Active</option>
+                <option value="Expired">Membership: Expired</option>
               </select>
             )}
             <div className="flex gap-2 pt-1">
@@ -207,11 +198,10 @@ const AdminDashboard = () => {
                   <td className="px-4 py-2 text-gray-600">{ROLE_LABELS[u.role] ?? u.role}</td>
                   <td className="px-4 py-2">
                     <span className={`px-1.5 py-0.5 rounded text-xs font-semibold uppercase ${
-                      u.membershipStatus === 'active'    ? 'bg-green-100 text-green-700' :
-                      u.membershipStatus === 'trial'     ? 'bg-blue-100 text-blue-700'  :
-                      u.membershipStatus === 'suspended' ? 'bg-yellow-100 text-yellow-700' :
-                                                           'bg-red-100 text-red-700'
-                    }`}>{u.membershipStatus || 'trial'}</span>
+                      u.membershipStatus === 'Active'  ? 'bg-green-100 text-green-700'   :
+                      u.membershipStatus === 'Expired' ? 'bg-red-100 text-red-700'       :
+                                                         'bg-yellow-100 text-yellow-700'
+                    }`}>{u.membershipStatus || 'Trial'}</span>
                   </td>
                 </tr>
               ))}

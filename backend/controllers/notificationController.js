@@ -3,8 +3,15 @@ const Notification = require('../models/Notification');
 const getNotifications = async (req, res) => {
   try {
     const { target } = req.query;
-    const filter = { source: 'admin' };
+    const filter = {};
     if (target) filter.target = { $in: [target, 'all'] };
+    if (req.user?.role !== 'admin') {
+      if (req.user?.id) {
+        filter.$or = [{ source: 'admin' }, { recipientId: req.user.id }];
+      } else {
+        filter.source = 'admin';
+      }
+    }
     const notifications = await Notification.find(filter).sort({ createdAt: -1 });
     res.json(notifications);
   } catch (error) {

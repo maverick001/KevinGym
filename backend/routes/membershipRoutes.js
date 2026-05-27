@@ -1,10 +1,9 @@
 const express = require('express');
-const router = express.Router();
-const { getMembershipStatus, getMembershipStatusById, transitionMembership } = require('../controllers/membershipController');
+const { getMembers, updateMembership } = require('../controllers/membershipController');
 const { protect, requireAdmin } = require('../middleware/authMiddleware');
+const router = express.Router();
 
-router.get('/status',             protect,               getMembershipStatus);
-router.get('/:userId/status',     protect, requireAdmin,  getMembershipStatusById);
-router.put('/:userId/transition', protect, requireAdmin,  transitionMembership);
+router.get('/', protect, requireAdmin, getMembers);
+router.put('/:id', protect, requireAdmin, updateMembership);
 
 module.exports = router;
