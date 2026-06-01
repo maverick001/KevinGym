@@ -105,7 +105,7 @@ describe('Get Courses Function Test', () => {
 describe('Update Course (PUT) Function Test', () => {
   afterEach(() => sinon.restore());
 
-  it('TC-054: Should fully update a course successfully', async () => {
+  it('TC-069: Should fully update a course successfully', async () => {
     const updated = { _id: 'c001', name: 'Evening Yoga', schedule: 'Tue/Thu', time: '06:00 PM', description: 'Advanced', studio: 'Studio C' };
     sinon.stub(Course, 'findByIdAndUpdate').resolves(updated);
 
@@ -118,7 +118,7 @@ describe('Update Course (PUT) Function Test', () => {
     assert.strictEqual(res.body.name, 'Evening Yoga');
   });
 
-  it('TC-055: Should return 404 if course not found', async () => {
+  it('TC-070: Should return 404 if course not found', async () => {
     sinon.stub(Course, 'findByIdAndUpdate').resolves(null);
 
     const req = { params: { id: 'nonexistent' }, body: { name: 'X', schedule: 'Y' } };
@@ -130,7 +130,7 @@ describe('Update Course (PUT) Function Test', () => {
     assert.strictEqual(res.body.message, 'Course not found');
   });
 
-  it('TC-056: Should return 500 if a database error occurs', async () => {
+  it('TC-071: Should return 500 if a database error occurs', async () => {
     sinon.stub(Course, 'findByIdAndUpdate').rejects(new Error('Database connection failed'));
 
     const req = { params: { id: 'c001' }, body: { name: 'X', schedule: 'Y' } };
@@ -146,7 +146,7 @@ describe('Update Course (PUT) Function Test', () => {
 describe('Patch Course (PATCH) Function Test', () => {
   afterEach(() => sinon.restore());
 
-  it('TC-057: Should partially update a course successfully', async () => {
+  it('TC-072: Should partially update a course successfully', async () => {
     const updated = { _id: 'c001', name: 'Morning Yoga', schedule: 'Mon/Wed', time: '10:00 AM', studio: 'Studio B' };
     sinon.stub(Course, 'findByIdAndUpdate').resolves(updated);
 
@@ -159,7 +159,7 @@ describe('Patch Course (PATCH) Function Test', () => {
     assert.strictEqual(res.body.studio, 'Studio B');
   });
 
-  it('TC-058: Should return 404 if course not found', async () => {
+  it('TC-073: Should return 404 if course not found', async () => {
     sinon.stub(Course, 'findByIdAndUpdate').resolves(null);
 
     const req = { params: { id: 'nonexistent' }, body: { studio: 'Studio B' } };
@@ -171,7 +171,7 @@ describe('Patch Course (PATCH) Function Test', () => {
     assert.strictEqual(res.body.message, 'Course not found');
   });
 
-  it('TC-059: Should return 500 if a database error occurs', async () => {
+  it('TC-074: Should return 500 if a database error occurs', async () => {
     sinon.stub(Course, 'findByIdAndUpdate').rejects(new Error('Database connection failed'));
 
     const req = { params: { id: 'c001' }, body: { studio: 'Studio B' } };
@@ -187,7 +187,7 @@ describe('Patch Course (PATCH) Function Test', () => {
 describe('Delete Course (DELETE) Function Test', () => {
   afterEach(() => sinon.restore());
 
-  it('TC-060: Should delete a course successfully', async () => {
+  it('TC-075: Should delete a course successfully', async () => {
     sinon.stub(Course, 'findByIdAndDelete').resolves({ _id: 'c001' });
 
     const req = { params: { id: 'c001' } };
@@ -199,7 +199,7 @@ describe('Delete Course (DELETE) Function Test', () => {
     assert.strictEqual(res.body.message, 'Course deleted');
   });
 
-  it('TC-061: Should return 404 if course not found', async () => {
+  it('TC-076: Should return 404 if course not found', async () => {
     sinon.stub(Course, 'findByIdAndDelete').resolves(null);
 
     const req = { params: { id: 'nonexistent' } };
@@ -211,7 +211,7 @@ describe('Delete Course (DELETE) Function Test', () => {
     assert.strictEqual(res.body.message, 'Course not found');
   });
 
-  it('TC-062: Should return 500 if a database error occurs', async () => {
+  it('TC-077: Should return 500 if a database error occurs', async () => {
     sinon.stub(Course, 'findByIdAndDelete').rejects(new Error('Database connection failed'));
 
     const req = { params: { id: 'c001' } };

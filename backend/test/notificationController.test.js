@@ -50,7 +50,7 @@ describe('Get Notifications Function Test', () => {
     sinon.assert.calledWith(Notification.find, { source: 'admin' });
   });
 
-  it('TC-054b: Admins see all notifications (no source filter)', async () => {
+  it('TC-078: Admins see all notifications (no source filter)', async () => {
     const notifications = [
       { id: 'n001', message: 'Gym closed tomorrow', target: 'all', source: 'admin' },
       { id: 'n002', message: 'User profile updated: Kevin', target: 'all', source: 'system' },
@@ -69,7 +69,7 @@ describe('Get Notifications Function Test', () => {
     sinon.assert.calledWith(Notification.find, {});
   });
 
-  it('TC-054c: Members see admin announcements and notifications addressed to them', async () => {
+  it('TC-079: Members see admin announcements and notifications addressed to them', async () => {
     sinon.stub(Notification, 'find').returns({
       sort: sinon.stub().resolves([]),
     });
