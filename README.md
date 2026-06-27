@@ -4,7 +4,7 @@
   <img src="./frontend/public/welcome_img.png" alt="Welcome Image">
 </p>
 
-Welcome to my gym management app.
+Hi, welcome to use my gym app.
 This is a full-stack web application designed to help gym owners manage gym members, course vendors, and daily gym operations. It has role-based access control for Admins, Gym Members, and Course Vendors.
 
 ---
